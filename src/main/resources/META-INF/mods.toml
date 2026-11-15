@@ -1,0 +1,27 @@
+modLoader="javafml"
+loaderVersion="[47,)"
+license="All Rights Reserved"
+
+[[mods]]
+modId="dmzhideout"
+version="${mod_version}"
+displayName="Project DMZ: Hideout"
+authors="Project DMZ development team"
+description='''
+Hideout Core, one safe home per Minecraft scoreboard team, and server-enforced
+safe-zone immunity and build/container access protection. Standalone.
+'''
+
+[[dependencies.dmzhideout]]
+modId="forge"
+mandatory=true
+versionRange="[47.4.28,)"
+ordering="NONE"
+side="BOTH"
+
+[[dependencies.dmzhideout]]
+modId="minecraft"
+mandatory=true
+versionRange="[1.20.1,1.20.2)"
+ordering="NONE"
+side="BOTH"

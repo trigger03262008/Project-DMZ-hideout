@@ -1,0 +1,32 @@
+name: Hideout Forge CI
+on:
+  push:
+    branches: [main]
+  pull_request:
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with: {distribution: temurin, java-version: '17'}
+      - name: Radius and collision tests
+        run: |
+          mkdir -p build/pure
+          javac --release 17 -d build/pure src/main/java/dev/dmzhideout/zone/ZoneGeometry.java src/test/java/dev/dmzhideout/zone/ZoneGeometrySmokeTest.java
+          java -ea -cp build/pure dev.dmzhideout.zone.ZoneGeometrySmokeTest
+  forge:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with: {distribution: temurin, java-version: '17'}
+      - uses: gradle/actions/setup-gradle@v4
+        with: {gradle-version: '8.8'}
+      - name: Build Forge 1.20.1 Hideout
+        run: gradle clean build --no-daemon --max-workers=1 --stacktrace
+      - uses: actions/upload-artifact@v4
+        with:
+          name: project-dmz-hideout-0.1.0
+          path: build/libs/*.jar
+          if-no-files-found: error
