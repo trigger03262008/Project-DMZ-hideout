@@ -2,6 +2,12 @@ package dev.dmzhideout.block;
 
 import dev.dmzhideout.DMZHideout;
 import net.minecraft.world.item.CreativeModeTabs;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.inventory.MenuType;
+import net.minecraftforge.common.extensions.IForgeMenuType;
+import dev.dmzhideout.menu.StashMenu;
+import dev.dmzhideout.menu.MedMenu;
+import dev.dmzhideout.menu.TradeMenu;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.level.block.Block;
@@ -18,6 +24,10 @@ public final class HideoutBlocks {
             DeferredRegister.create(ForgeRegistries.BLOCKS, DMZHideout.MOD_ID);
     private static final DeferredRegister<Item> ITEMS =
             DeferredRegister.create(ForgeRegistries.ITEMS, DMZHideout.MOD_ID);
+    private static final DeferredRegister<BlockEntityType<?>> ENTITIES =
+            DeferredRegister.create(ForgeRegistries.BLOCK_ENTITY_TYPES, DMZHideout.MOD_ID);
+    private static final DeferredRegister<MenuType<?>> MENUS =
+            DeferredRegister.create(ForgeRegistries.MENU_TYPES, DMZHideout.MOD_ID);
 
     public static final RegistryObject<Block> HIDEOUT_CORE = BLOCKS.register("hideout_core",
             () -> new HideoutCoreBlock(BlockBehaviour.Properties.of()
@@ -26,16 +36,59 @@ public final class HideoutBlocks {
     public static final RegistryObject<Item> HIDEOUT_CORE_ITEM = ITEMS.register("hideout_core",
             () -> new BlockItem(HIDEOUT_CORE.get(), new Item.Properties().stacksTo(1)));
 
+    public static final RegistryObject<Block> STASH = BLOCKS.register("stash",
+            () -> new FacilityBlock(FacilityBlock.Kind.STASH, BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.METAL).strength(4.0F, 1000.0F)));
+    public static final RegistryObject<Block> MED_STATION = BLOCKS.register("med_station",
+            () -> new FacilityBlock(FacilityBlock.Kind.MED, BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.METAL).strength(4.0F, 1000.0F)));
+    public static final RegistryObject<Block> TRADING_CENTER = BLOCKS.register("trading_center",
+            () -> new FacilityBlock(FacilityBlock.Kind.TRADE, BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.METAL).strength(4.0F, 1000.0F)));
+
+    public static final RegistryObject<Item> STASH_ITEM = ITEMS.register("stash",
+            () -> new BlockItem(STASH.get(), new Item.Properties().stacksTo(1)));
+    public static final RegistryObject<Item> MED_ITEM = ITEMS.register("med_station",
+            () -> new BlockItem(MED_STATION.get(), new Item.Properties().stacksTo(1)));
+    public static final RegistryObject<Item> TRADING_ITEM = ITEMS.register("trading_center",
+            () -> new BlockItem(TRADING_CENTER.get(), new Item.Properties().stacksTo(1)));
+
+    public static final RegistryObject<BlockEntityType<StashBlockEntity>> STASH_ENTITY =
+            ENTITIES.register("stash", () -> BlockEntityType.Builder.of(
+                    StashBlockEntity::new, STASH.get()).build(null));
+    public static final RegistryObject<BlockEntityType<FacilityBlockEntity>> MED_ENTITY =
+            ENTITIES.register("med_station", () -> BlockEntityType.Builder.of(
+                    (pos, state) -> new FacilityBlockEntity(pos, state, FacilityBlock.Kind.MED),
+                    MED_STATION.get()).build(null));
+    public static final RegistryObject<BlockEntityType<FacilityBlockEntity>> TRADE_ENTITY =
+            ENTITIES.register("trading_center", () -> BlockEntityType.Builder.of(
+                    (pos, state) -> new FacilityBlockEntity(pos, state, FacilityBlock.Kind.TRADE),
+                    TRADING_CENTER.get()).build(null));
+
+    public static final RegistryObject<MenuType<StashMenu>> STASH_MENU =
+            MENUS.register("stash", () -> IForgeMenuType.create(StashMenu::new));
+    public static final RegistryObject<MenuType<MedMenu>> MED_MENU =
+            MENUS.register("med_station", () -> IForgeMenuType.create(MedMenu::new));
+    public static final RegistryObject<MenuType<TradeMenu>> TRADE_MENU =
+            MENUS.register("trading_center", () -> IForgeMenuType.create(TradeMenu::new));
+
     private HideoutBlocks() { }
 
     public static void register(IEventBus bus) {
         BLOCKS.register(bus);
         ITEMS.register(bus);
+        ENTITIES.register(bus);
+        MENUS.register(bus);
         bus.addListener(HideoutBlocks::creativeTab);
     }
 
     private static void creativeTab(BuildCreativeModeTabContentsEvent event) {
         if (event.getTabKey().equals(CreativeModeTabs.FUNCTIONAL_BLOCKS))
-            event.accept(HIDEOUT_CORE_ITEM.get());
+            {
+                event.accept(HIDEOUT_CORE_ITEM.get());
+                event.accept(STASH_ITEM.get());
+                event.accept(MED_ITEM.get());
+                event.accept(TRADING_ITEM.get());
+            }
     }
 }

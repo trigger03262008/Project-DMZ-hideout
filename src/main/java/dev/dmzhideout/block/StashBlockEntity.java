@@ -25,6 +25,8 @@ public final class StashBlockEntity extends BlockEntity implements MenuProvider 
     public static final int SLOTS_PER_LEVEL = 270;
     public static final int MAX_LEVEL = 5;
     public static final int MAX_SLOTS = SLOTS_PER_LEVEL * MAX_LEVEL;
+    private int revision;
+    public int revision() { return revision; }
     private UUID owner;
     private String team = "";
     private boolean shared;
@@ -32,6 +34,7 @@ public final class StashBlockEntity extends BlockEntity implements MenuProvider 
 
     private final ItemStackHandler storage = new ItemStackHandler(MAX_SLOTS) {
         @Override protected void onContentsChanged(int slot) {
+            StashBlockEntity.this.revision++;
             StashBlockEntity.this.setChanged();
         }
     };

@@ -2,6 +2,8 @@ package dev.dmzhideout.zone;
 
 import dev.dmzhideout.DMZHideout;
 import dev.dmzhideout.config.HideoutConfig;
+import dev.dmzhideout.block.StashBlockEntity;
+import net.minecraft.network.chat.Component;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -40,8 +42,20 @@ public final class SafeZoneEvents {
 
     @SubscribeEvent(priority = EventPriority.HIGHEST)
     public static void breakBlock(BlockEvent.BreakEvent event) {
-        if (event.getLevel() instanceof ServerLevel level &&
-                denied(level, event.getPos(), event.getPlayer())) event.setCanceled(true);
+        if (!(event.getLevel() instanceof ServerLevel level)) return;
+        if (denied(level, event.getPos(), event.getPlayer())) {
+            event.setCanceled(true);
+            return;
+        }
+        if (level.getBlockEntity(event.getPos()) instanceof StashBlockEntity stash) {
+            // Personal stash remains private even in an otherwise shared base.
+            if (!(event.getPlayer() instanceof ServerPlayer player)
+                    || !stash.isOwner(player) || !stash.isEmpty()) {
+                event.setCanceled(true);
+                event.getPlayer().displayClientMessage(Component.literal(
+                        "Stash: 所有者本人が空にしてから回収してください"),true);
+            }
+        }
     }
 
     @SubscribeEvent(priority = EventPriority.HIGHEST)
