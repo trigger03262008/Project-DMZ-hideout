@@ -35,7 +35,7 @@ public final class TradeMenu extends AbstractContainerMenu {
     private final Inventory inventory;
     // scroll row, max scroll, connected Stash, quote low/high, basket line count,
     // 24 per-line quantities.
-    private final SimpleContainerData state=new SimpleContainerData(6+BASKET_VISIBLE);
+    private final SimpleContainerData state=new SimpleContainerData(6+BASKET_VISIBLE+STASH_VISIBLE);
     private final int[] mapped=new int[STASH_VISIBLE];
     private final ItemStackHandler clientStash=new ItemStackHandler(STASH_VISIBLE);
     private final ItemStackHandler clientBasket=new ItemStackHandler(BASKET_VISIBLE);
@@ -111,6 +111,10 @@ public final class TradeMenu extends AbstractContainerMenu {
         return v<0?-1:(long)v;
     }
     public int basketSize(){return state.get(5);}
+    public boolean lockedVisible(int i){
+        return i>=0&&i<STASH_VISIBLE&&
+                state.get(6+BASKET_VISIBLE+i)!=0;
+    }
     public int basketCount(int i){
         return i>=0&&i<BASKET_VISIBLE?state.get(6+i):0;
     }
@@ -234,6 +238,8 @@ public final class TradeMenu extends AbstractContainerMenu {
         for(int i=0;i<STASH_VISIBLE;i++){
             int n=scrollRow*STASH_COLS+i;
             mapped[i]=n<positions.size()?positions.get(n):-1;
+            state.set(6+BASKET_VISIBLE+i,stash!=null&&
+                    mapped[i]>=0&&stash.isLocked(mapped[i])?1:0);
         }
         state.set(0,scrollRow);
         state.set(1,maxScroll);
