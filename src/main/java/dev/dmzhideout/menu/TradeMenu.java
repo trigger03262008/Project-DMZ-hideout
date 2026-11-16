@@ -42,6 +42,7 @@ public final class TradeMenu extends AbstractContainerMenu {
     private final List<SaleLine> basket=new ArrayList<>();
     private int scrollRow,maxScroll,revision=-1;
     private String query="",selectedTrader="";
+    private boolean basketVisible=true;
 
     private record SaleLine(String offer,String itemId,int count,ItemStack preview) { }
 
@@ -97,12 +98,15 @@ public final class TradeMenu extends AbstractContainerMenu {
             addSlot(new SlotItemHandler(basketWindow,i,22+i%8*18,110+i/8*18){
                 @Override public boolean mayPlace(ItemStack item){return false;}
                 @Override public boolean mayPickup(Player player){return false;}
+                @Override public boolean isActive(){return TradeMenu.this.basketVisible;}
             });
         addDataSlots(state);
         refresh();
     }
 
     public BlockPos pos(){return center;}
+    /** Client presentation only; does not mutate basket contents or authority. */
+    public void showBasket(boolean show){basketVisible=show;}
     public int scrollRow(){return state.get(0);}
     public int maxScroll(){return state.get(1);}
     public boolean hasStash(){return state.get(2)!=0;}

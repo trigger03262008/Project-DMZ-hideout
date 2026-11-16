@@ -196,6 +196,7 @@ public final class TradeScreen extends AbstractContainerScreen<TradeMenu> {
         g.fill(x+8,y+55,x+278,y+290,0xFF273732);
         g.fill(x+284,y+55,x+540,y+290,0xFF263832);
         for(int i=0;i<menu.slots.size();i++){
+            if(!sellMode && i>=TradeMenu.STASH_VISIBLE)continue;
             var slot=menu.slots.get(i);
             int sx=x+slot.x-1,sy=y+slot.y-1;
             g.fill(sx,sy,sx+18,sy+18,0xFF4F665B);
@@ -364,6 +365,7 @@ public final class TradeScreen extends AbstractContainerScreen<TradeMenu> {
     }
 
     @Override public void render(GuiGraphics g,int mx,int my,float partial){
+        menu.showBasket(sellMode);
         List<JsonObject> pool=traders();
         JsonObject current=selectedTrader();
         syncTrader();
