@@ -15,6 +15,8 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.SimpleContainerData;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.ArmorItem;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraftforge.items.ItemStackHandler;
 import net.minecraftforge.items.SlotItemHandler;
@@ -29,8 +31,8 @@ public final class StashMenu extends AbstractContainerMenu {
     private final StashBlockEntity stash;
     private final ItemStackHandler clientMirror = new ItemStackHandler(VISIBLE);
     private final int[] map = new int[VISIBLE];
-    private final SimpleContainerData info = new SimpleContainerData(4);
-    private int page, pages = 1, sort, version = -1;
+    private final SimpleContainerData info = new SimpleContainerData(5 + VISIBLE);
+    private int page, pages = 1, sort, filter, version = -1;
     private String query = "";
 
     public StashMenu(int id, Inventory inventory, FriendlyByteBuf buf) {
@@ -67,8 +69,9 @@ public final class StashMenu extends AbstractContainerMenu {
                 if (!(StashMenu.this.inventory.player instanceof ServerPlayer) ||
                         StashMenu.this.stash == null) return ItemStack.EMPTY;
                 int actual = slotIndex(n);
-                return actual < 0 ? ItemStack.EMPTY :
-                        StashMenu.this.stash.storage().extractItem(actual, amount, simulate);
+                return actual < 0 || StashMenu.this.stash.isLocked(actual)
+                        ? ItemStack.EMPTY : StashMenu.this.stash.storage()
+                                .extractItem(actual, amount, simulate);
             }
             public int getSlotLimit(int n) { return 64; }
             public boolean isItemValid(int n, ItemStack stack) { return true; }
@@ -81,8 +84,16 @@ public final class StashMenu extends AbstractContainerMenu {
                 }
             }
         };
-        for (int i = 0; i < VISIBLE; i++)
-            addSlot(new SlotItemHandler(view, i, 8 + i % 9 * 18, 37 + i / 9 * 18));
+        for (int i = 0; i < VISIBLE; i++) {
+            final int visible = i;
+            addSlot(new SlotItemHandler(view, i, 8 + i % 9 * 18, 37 + i / 9 * 18) {
+                @Override public boolean mayPickup(Player player) {
+                    return StashMenu.this.stash == null ||
+                            !(player instanceof ServerPlayer) ||
+                            !StashMenu.this.stash.isLocked(map[visible]);
+                }
+            });
+        }
         for (int y = 0; y < 3; y++)
             for (int x = 0; x < 9; x++)
                 addSlot(new Slot(inventory, x + y * 9 + 9, 8 + x * 18, 156 + y * 18));
@@ -97,6 +108,16 @@ public final class StashMenu extends AbstractContainerMenu {
     public int pages() { return info.get(1); }
     public int tier() { return info.get(2); }
     public boolean shared() { return info.get(3) != 0; }
+    public int filterIndex() { return info.get(4); }
+    public boolean lockedVisible(int index) {
+        return index >= 0 && index < VISIBLE && info.get(5 + index) != 0;
+    }
+    public void toggleLock(ServerPlayer player, int index) {
+        if (stash != null && index >= 0 && index < VISIBLE && map[index] >= 0) {
+            stash.toggleLock(player, map[index]);
+            rebuild();
+        }
+    }
     public boolean isOwner(ServerPlayer p) { return stash != null && stash.isOwner(p); }
 
     public void search(String q) {
@@ -105,6 +126,7 @@ public final class StashMenu extends AbstractContainerMenu {
         rebuild();
     }
     public void sort() { sort = (sort + 1) % 3; page = 0; rebuild(); }
+    public void filter() { filter = (filter + 1) % 5; page = 0; rebuild(); }
     public void navigate(int delta) {
         page = Math.max(0, Math.min(pages - 1, page + delta));
         rebuild();
@@ -117,10 +139,18 @@ public final class StashMenu extends AbstractContainerMenu {
         List<Integer> indexes = new ArrayList<>();
         for (int i = 0; i < stash.capacity(); i++) {
             ItemStack stack = stash.storage().getStackInSlot(i);
-            if (query.isEmpty() || !stack.isEmpty() && (stack.getHoverName().getString()
-                    .toLowerCase(Locale.ROOT).contains(query)
+            boolean category = switch (filter) {
+                case 1 -> stack.getItem() instanceof BlockItem;
+                case 2 -> stack.isEdible();
+                case 3 -> stack.getItem() instanceof ArmorItem || stack.isDamageableItem();
+                case 4 -> !stack.isEmpty() && "dmzcore".equals(
+                        ForgeRegistries.ITEMS.getKey(stack.getItem()).getNamespace());
+                default -> true;
+            };
+            if (category && (query.isEmpty() || !stack.isEmpty() && (
+                    stack.getHoverName().getString().toLowerCase(Locale.ROOT).contains(query)
                     || ForgeRegistries.ITEMS.getKey(stack.getItem()).toString()
-                    .contains(query))) indexes.add(i);
+                    .contains(query)))) indexes.add(i);
         }
         if (sort != 0) {
             Comparator<Integer> comparator = Comparator.comparing(i -> {
@@ -141,6 +171,9 @@ public final class StashMenu extends AbstractContainerMenu {
         info.set(1, pages);
         info.set(2, stash.tier());
         info.set(3, stash.isShared() ? 1 : 0);
+        info.set(4, filter);
+        for (int i=0;i<VISIBLE;i++)
+            info.set(5+i, map[i] >= 0 && stash.isLocked(map[i]) ? 1 : 0);
         version = stash.revision();
         broadcastFullState();
     }
@@ -160,7 +193,8 @@ public final class StashMenu extends AbstractContainerMenu {
     @Override public ItemStack quickMoveStack(Player player, int index) {
         if (stash == null || index < 0 || index >= slots.size()) return ItemStack.EMPTY;
         Slot slot = slots.get(index);
-        if (!slot.hasItem()) return ItemStack.EMPTY;
+        if (!slot.hasItem() || index < VISIBLE &&
+                stash.isLocked(map[index])) return ItemStack.EMPTY;
         ItemStack current = slot.getItem();
         ItemStack original = current.copy();
         if (index >= VISIBLE) {
