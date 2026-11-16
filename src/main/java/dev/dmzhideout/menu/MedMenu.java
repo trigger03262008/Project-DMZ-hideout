@@ -13,7 +13,7 @@ import net.minecraft.world.item.ItemStack;
 
 public final class MedMenu extends AbstractContainerMenu {
     private final BlockPos pos;
-    private final SimpleContainerData quote = new SimpleContainerData(1);
+    private final SimpleContainerData quote = new SimpleContainerData(2);
     private final Inventory inv;
 
     public MedMenu(int id, Inventory inv, FriendlyByteBuf buf) {
@@ -26,11 +26,13 @@ public final class MedMenu extends AbstractContainerMenu {
         addDataSlots(quote);
     }
     public BlockPos pos() { return pos; }
-    public int quote() { return quote.get(0); }
+    public int quote() { return (quote.get(0) & 65535) | (quote.get(1) << 16); }
 
     @Override public void broadcastChanges() {
         if (inv.player instanceof ServerPlayer player) {
-            quote.set(0, MedicalCompat.quote(player));
+            int amount=MedicalCompat.quote(player);
+            quote.set(0,amount & 65535);
+            quote.set(1,(amount >>> 16) & 65535);
             if (player.tickCount % 20 == 0)
                 dev.dmzhideout.network.HideoutNetwork.sendMedStock(player,pos);
         }
