@@ -9,6 +9,7 @@ import dev.dmzhideout.menu.MedMenu;
 import dev.dmzhideout.menu.TradeMenu;
 import java.util.Optional;
 import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.fml.DistExecutor;
@@ -44,6 +45,9 @@ public final class HideoutNetwork {
         CHANNEL.registerMessage(1, RecipeCatalog.class,
                 RecipeCatalog::encode,RecipeCatalog::decode,RecipeCatalog::handle,
                 Optional.of(NetworkDirection.PLAY_TO_CLIENT));
+        CHANNEL.registerMessage(2, MedStock.class,
+                MedStock::encode,MedStock::decode,MedStock::handle,
+                Optional.of(NetworkDirection.PLAY_TO_CLIENT));
     }
 
     public static void request(Action action, BlockPos pos) {
@@ -63,6 +67,28 @@ public final class HideoutNetwork {
         String json=dev.dmzhideout.med.MedRecipes.snapshot().toString();
         if(json.length()<=20000)
             CHANNEL.send(PacketDistributor.PLAYER.with(()->player),new RecipeCatalog(json));
+    }
+
+    public static void sendMedStock(ServerPlayer player, BlockPos center) {
+        String payload=dev.dmzhideout.med.MedRecipes.stashStock(player,center).toString();
+        if(payload.length()<=20000)
+            CHANNEL.send(PacketDistributor.PLAYER.with(()->player),new MedStock(payload));
+    }
+
+    private record MedStock(String json) {
+        static void encode(MedStock packet,FriendlyByteBuf buf) {
+            buf.writeUtf(packet.json,20000);
+        }
+        static MedStock decode(FriendlyByteBuf buf) {
+            return new MedStock(buf.readUtf(20000));
+        }
+        static void handle(MedStock packet,Supplier<NetworkEvent.Context> supplier) {
+            NetworkEvent.Context context=supplier.get();
+            context.enqueueWork(()->DistExecutor.unsafeRunWhenOn(Dist.CLIENT,
+                    ()->()->dev.dmzhideout.med.MedClientStock.update(
+                            JsonParser.parseString(packet.json).getAsJsonObject())));
+            context.setPacketHandled(true);
+        }
     }
 
     private record RecipeCatalog(String json) {

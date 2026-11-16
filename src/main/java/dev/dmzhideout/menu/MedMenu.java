@@ -29,8 +29,11 @@ public final class MedMenu extends AbstractContainerMenu {
     public int quote() { return quote.get(0); }
 
     @Override public void broadcastChanges() {
-        if (inv.player instanceof ServerPlayer player)
+        if (inv.player instanceof ServerPlayer player) {
             quote.set(0, MedicalCompat.quote(player));
+            if (player.tickCount % 20 == 0)
+                dev.dmzhideout.network.HideoutNetwork.sendMedStock(player,pos);
+        }
         super.broadcastChanges();
     }
     @Override public boolean stillValid(Player player) {

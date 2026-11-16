@@ -63,7 +63,10 @@ public final class FacilityBlock extends BaseEntityBlock {
             NetworkHooks.openScreen(sp, stash, pos);
         } else if (entity instanceof FacilityBlockEntity facility) {
             NetworkHooks.openScreen(sp, facility, pos);
-            if (kind == Kind.MED) dev.dmzhideout.network.HideoutNetwork.sendRecipes(sp);
+            if (kind == Kind.MED) {
+                dev.dmzhideout.network.HideoutNetwork.sendRecipes(sp);
+                dev.dmzhideout.network.HideoutNetwork.sendMedStock(sp,pos);
+            }
         }
         return InteractionResult.CONSUME;
     }
