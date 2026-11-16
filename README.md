@@ -1,6 +1,23 @@
-# Project DMZ: Hideout v0.1.0 — Hideout Core / Safe Zone
+# Project DMZ: Hideout v0.1.1 — Safe-zone Particle Boundaries
 
 **Minecraft 1.20.1 / Forge 47.4.28 / Java 17**. Independent mod `dmzhideout`, without mandatory P.D.A/Health/Inventory dependencies. The original Project DMZ design notes were reviewed; only the **Core and Core-generated zone** are part of this first slice.
+
+## What's new in v0.1.1: particle outlines
+
+- The ACTIVE Core's safe-zone boundary is shown using **soft dust particles**: a dotted circular ring at the viewing player's height, with four vertical marker columns indicating the cylinder's height.
+- **Teal** = a safe zone owned by your current scoreboard team (or your solo UUID). **Amber** = another owner's protected zone.
+- The ring is intentionally a visualization, not a force field or a changed collision shape. Actual protection remains the same circular horizontal radius (default **12**) with vertical **±12**.
+- The ring is only sent to players within the configured display margin of the active zone. The server emits the particles; no additional client mod or protocol is required beyond Hideout itself.
+- Relocating a Core stops the old outline; removing the active Core stops its outline. World-save behavior and the Hideout Core block remain unchanged.
+- Server config `world/serverconfig/dmzhideout-server.toml`, section `[visualization]`:
+  - `showBoundaryParticles = true` — disable all boundary particles if desired.
+  - `particleIntervalTicks = 20` — how often particles are emitted (5–100).
+  - `particleRingPoints = 40` — number of dots along the circle (12–128).
+  - `particleViewMargin = 16` — how far outside the boundary a player can be and still see it (0–64).
+- Sending is capped by vanilla's 32-block non-forced particle visibility per point, and never scans terrain or force-loads chunks.
+- For performance, increase `particleIntervalTicks` or reduce `particleRingPoints` if many people have bases close together.
+
+**Visual smoke test:** walk across the boundary to check the teal/orange ring, climb to view top/bottom markers, change the radius in TOML, move the Core and check the old ring disappears. The particle color follows the player's present team membership.
 
 ## What this prototype implements
 
@@ -47,4 +64,4 @@ Java **17**, Gradle **8.8**, ForgeGradle 6:
 gradle clean build --no-daemon --max-workers=1
 ```
 
-Expected output `build/libs/project-dmz-hideout-0.1.0.jar`. GitHub Actions builds and publishes a downloadable JAR.
+Expected output `build/libs/project-dmz-hideout-0.1.1.jar`. GitHub Actions builds and publishes a downloadable JAR.

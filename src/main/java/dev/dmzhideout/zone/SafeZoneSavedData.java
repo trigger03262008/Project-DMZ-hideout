@@ -1,6 +1,7 @@
 package dev.dmzhideout.zone;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
@@ -64,6 +65,11 @@ public final class SafeZoneSavedData extends SavedData {
         });
         root.put("Zones", list);
         return root;
+    }
+
+    /** Current authoritative active zones; old relocated cores have no entry. */
+    public List<Zone> activeZones() {
+        return List.copyOf(zones.values());
     }
 
     public Zone at(ServerLevel level, BlockPos pos) {
