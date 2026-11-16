@@ -243,7 +243,7 @@ public final class TradeScreen extends AbstractContainerScreen<TradeMenu> {
                     15,206,quote<0?RED:GOLD,257);
             label(g,"売却対象 "+menu.basketSize()+" 種類",15,222,GRAY,247);
             label(g,"右のアイテムをクリックで追加",15,238,GRAY,253);
-            label(g,"Shift+クリック:全数 / 左の品:右クリック除外",85,279,GRAY,194);
+            label(g,"Shift:全数 / 右クリック:半数 / カゴ:除外",78,279,GRAY,194);
             // Item icons remain visible but untradeable items are dimmed.
             for(int i=0;i<TradeMenu.STASH_VISIBLE;i++){
                 ItemStack stack=menu.slots.get(i).getItem();
@@ -306,12 +306,13 @@ public final class TradeScreen extends AbstractContainerScreen<TradeMenu> {
         }
         if(sellMode){
             int stash=rightVisible(mx,my);
-            if(stash>=0&&button==0){
+            if(stash>=0&&(button==0||button==1)){
                 ItemStack item=menu.slots.get(stash).getItem();
                 if(!item.isEmpty()&&!menu.lockedVisible(stash)&&isEligible(item)){
-                    if(hasShiftDown())
+                    if(button==1||hasShiftDown())
                         HideoutNetwork.request(Action.TRADE_BASKET_ADD,menu.pos(),
-                                Integer.toString(stash),"all",false,false);
+                                Integer.toString(stash),
+                                hasShiftDown()?"all":"half",false,false);
                     else pendingStash=stash; // release after click OR drag-to-basket
                 }
                 return true;

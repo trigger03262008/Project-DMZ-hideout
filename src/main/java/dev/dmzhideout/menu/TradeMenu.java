@@ -159,7 +159,7 @@ public final class TradeMenu extends AbstractContainerMenu {
         return out;
     }
 
-    public void addToBasket(ServerPlayer player,int displayed,boolean all){
+    public void addToBasket(ServerPlayer player,int displayed,String mode){
         if(displayed<0||displayed>=STASH_VISIBLE||mapped[displayed]<0||
                 selectedTrader.isBlank())return;
         StashBlockEntity stash=selectedStash();
@@ -173,7 +173,8 @@ public final class TradeMenu extends AbstractContainerMenu {
             return;
         }
         String item=ForgeRegistries.ITEMS.getKey(stack.getItem()).toString();
-        int adding=all?stack.getCount():1;
+        int adding="all".equals(mode)?stack.getCount():
+                "half".equals(mode)?(stack.getCount()+1)/2:1;
         int existing=-1;
         for(int i=0;i<basket.size();i++){
             SaleLine line=basket.get(i);

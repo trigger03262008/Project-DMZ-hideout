@@ -197,8 +197,7 @@ public final class HideoutNetwork {
                         }
                         case TRADE_BASKET_ADD -> {
                             try {
-                                menu.addToBasket(player,Integer.parseInt(req.a),
-                                        "all".equals(req.b));
+                                menu.addToBasket(player,Integer.parseInt(req.a),req.b);
                             }catch(NumberFormatException ignored) { }
                         }
                         case TRADE_BASKET_REMOVE -> {
