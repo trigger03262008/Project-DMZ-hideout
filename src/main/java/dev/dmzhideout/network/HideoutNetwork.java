@@ -31,7 +31,8 @@ public final class HideoutNetwork {
             new ResourceLocation(DMZHideout.MOD_ID, "facilities"),
             () -> VERSION, VERSION::equals, VERSION::equals);
     public enum Action {
-        STASH_QUERY, STASH_NEXT, STASH_PREV, STASH_SORT, STASH_TOGGLE, STASH_UPGRADE,
+        STASH_QUERY, STASH_NEXT, STASH_PREV, STASH_SORT, STASH_FILTER, STASH_LOCK,
+        STASH_TOGGLE, STASH_UPGRADE,
         MED_HEAL, MED_CRAFT, TRADE_QUERY, TRADE_NEXT, TRADE_PREV, TRADE_BUY, TRADE_SELL
     }
 
@@ -109,6 +110,13 @@ public final class HideoutNetwork {
                         case STASH_NEXT -> menu.navigate(1);
                         case STASH_PREV -> menu.navigate(-1);
                         case STASH_SORT -> menu.sort();
+                        case STASH_FILTER -> menu.filter();
+                        case STASH_LOCK -> {
+                            try {
+                                int n=Integer.parseInt(req.a);
+                                menu.toggleLock(player,n);
+                            }catch(NumberFormatException ignored) { }
+                        }
                         case STASH_TOGGLE -> {
                             if (!stash.toggleShared(player))
                                 player.displayClientMessage(Component.literal(
