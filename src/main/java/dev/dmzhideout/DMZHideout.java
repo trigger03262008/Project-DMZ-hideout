@@ -1,6 +1,7 @@
 package dev.dmzhideout;
 
 import dev.dmzhideout.block.HideoutBlocks;
+import dev.dmzhideout.network.HideoutNetwork;
 import dev.dmzhideout.config.HideoutConfig;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.config.ModConfig;
@@ -14,6 +15,7 @@ public final class DMZHideout {
 
     public DMZHideout() {
         HideoutBlocks.register(FMLJavaModLoadingContext.get().getModEventBus());
+        HideoutNetwork.init();
         ModLoadingContext.get().registerConfig(ModConfig.Type.SERVER, HideoutConfig.SPEC);
     }
 }

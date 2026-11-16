@@ -1,1 +1,9 @@
-{"replace":false,"values":["dmzhideout:hideout_core"]}
+{
+  "replace": false,
+  "values": [
+    "dmzhideout:hideout_core",
+    "dmzhideout:stash",
+    "dmzhideout:med_station",
+    "dmzhideout:trading_center"
+  ]
+}

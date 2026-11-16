@@ -1,1 +1,6 @@
-{"block.dmzhideout.hideout_core":"Hideout Core"}
+{
+  "block.dmzhideout.hideout_core": "Hideout Core",
+  "block.dmzhideout.stash": "Stash",
+  "block.dmzhideout.med_station": "Med Station",
+  "block.dmzhideout.trading_center": "Trading Center"
+}

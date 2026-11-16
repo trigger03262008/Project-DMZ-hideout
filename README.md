@@ -1,8 +1,19 @@
-# Project DMZ: Hideout v0.1.1 — Safe-zone Particle Boundaries
+# Project DMZ: Hideout v0.2.0 — Facilities
 
 **Minecraft 1.20.1 / Forge 47.4.28 / Java 17**. Independent mod `dmzhideout`, without mandatory P.D.A/Health/Inventory dependencies. The original Project DMZ design notes were reviewed; only the **Core and Core-generated zone** are part of this first slice.
 
-## What's new in v0.1.1: particle outlines
+## What's new in v0.2.0 — three facility blocks
+
+- `dmzhideout:stash`: independent, saved super-sized storage with private/team sharing, an initial 270 slots and upgrades to 1350 slots (5 tiers, each +270). Upgrades cost tier×16 iron ingots, editable in future data-driven upgrade packs.
+- Search by display name or item registry ID, paging, sort, shift-click deposits, owner-only sharing mode switch. Nonempty stash cannot be normally mined; it must be emptied first.
+- `dmzhideout:med_station`: requires Health v1.0.1 and P.D.A v0.7.0 for full paid injury recovery; independent JSON-based medical crafting. Includes one starter bandage recipe using Minecraft materials, and has `required_mods` filtering for future Loot recipes.
+- `dmzhideout:trading_center`: three-column interface (trader/offer, settlement, adjacent stash) that delegates pricing and transactional authority to Traders v0.2.1.
+- Adjacent accessible stashes are discovered in the six face-adjacent positions. StashApi is publicly available for future Inventory integration; Inventory v0.0.0 still has no 2D grid system, so the stash uses normal slot storage until that API exists.
+- Vanilla artwork placeholders for the three blocks; no survival recipes for the block machines yet.
+
+The v0.1.1 safe zone and boundary particles are unchanged. Make a world backup when upgrading.
+
+## Previous v0.1.1: particle outlines
 
 - The ACTIVE Core's safe-zone boundary is shown using **soft dust particles**: a dotted circular ring at the viewing player's height, with four vertical marker columns indicating the cylinder's height.
 - **Teal** = a safe zone owned by your current scoreboard team (or your solo UUID). **Amber** = another owner's protected zone.
@@ -64,4 +75,4 @@ Java **17**, Gradle **8.8**, ForgeGradle 6:
 gradle clean build --no-daemon --max-workers=1
 ```
 
-Expected output `build/libs/project-dmz-hideout-0.1.1.jar`. GitHub Actions builds and publishes a downloadable JAR.
+Expected output `build/libs/project-dmz-hideout-0.2.0.jar`. GitHub Actions builds and publishes a downloadable JAR.
