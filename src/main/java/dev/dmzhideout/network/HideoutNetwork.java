@@ -27,7 +27,7 @@ import net.minecraftforge.network.simple.SimpleChannel;
 
 /** Client sends intentions; server verifies open menu, proximity, block and owner. */
 public final class HideoutNetwork {
-    private static final String VERSION = "1";
+    private static final String VERSION = "2";
     private static final SimpleChannel CHANNEL = NetworkRegistry.newSimpleChannel(
             new ResourceLocation(DMZHideout.MOD_ID, "facilities"),
             () -> VERSION, VERSION::equals, VERSION::equals);

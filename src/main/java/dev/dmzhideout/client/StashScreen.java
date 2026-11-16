@@ -77,7 +77,10 @@ public final class StashScreen extends AbstractContainerScreen<StashMenu> {
             g.fill(sx,sy,sx+67,sy+25,0xFF303D38);
             g.fill(sx+1,sy+1,sx+66,sy+24,0xFF1B2925);
             g.drawString(font,gear[i],sx+5,sy+4,0xFF77877D,false);
-            g.drawString(font,"\uD83D\uDD12",sx+47,sy+13,0xFF879487,false);
+            // Draw a clear padlock without relying on missing Unicode glyphs.
+            g.fill(sx+49,sy+15,sx+57,sy+22,0xFF839589);
+            g.fill(sx+51,sy+10,sx+55,sy+16,0xFF839589);
+            g.fill(sx+52,sy+12,sx+54,sy+16,0xFF1B2925);
         }
         // Player model background.
         g.fill(x+226,y+48,x+332,y+151,0xFF172721);
