@@ -39,8 +39,8 @@ assert len(recipe["ingredients"])>=1
 assert all(i["count"]>0 and ":" in i["item"] for i in recipe["ingredients"])
 
 assert js("src/main/resources/pack.mcmeta")["pack"]["pack_format"]==15
-assert "project-dmz-hideout-0.2.0" in read(".github/workflows/hideout-ci.yml")
-assert "version = '0.2.0'" in read("build.gradle")
+assert "project-dmz-hideout-0.2.1" in read(".github/workflows/hideout-ci.yml")
+assert "version = '0.2.1'" in read("build.gradle")
 source=read("src/main/java/dev/dmzhideout/block/StashBlockEntity.java")
 assert "MAX_LEVEL = 5" in source and "SLOTS_PER_LEVEL = 270" in source
 for token in ("setChanged()","getIntArray(\"Locked\")","toggleShared","upgrade","insert("):
