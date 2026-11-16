@@ -72,6 +72,19 @@ public final class StashApi {
      * Trusted server-only rollback hook. Used when a multi-source settlement
      * fails; restores precisely one previous snapshot with no dropped items.
      */
+    /** Spendable stacks exclude manually locked slots; indices stay stable. */
+    public static List<ItemStack> spendableSnapshot(ServerLevel level, BlockPos pos,
+                                                    ServerPlayer player) {
+        StashBlockEntity stash = check(level, pos, player);
+        if (stash == null) return List.of();
+        List<ItemStack> spendable = new ArrayList<>(stash.capacity());
+        for (int i = 0; i < stash.capacity(); i++) {
+            spendable.add(stash.isLocked(i) ? ItemStack.EMPTY :
+                    stash.storage().getStackInSlot(i).copy());
+        }
+        return List.copyOf(spendable);
+    }
+
     public static boolean restore(ServerLevel level, BlockPos pos,
                                   ServerPlayer player, List<ItemStack> previous) {
         StashBlockEntity stash = check(level, pos, player);
