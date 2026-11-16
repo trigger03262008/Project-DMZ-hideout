@@ -36,7 +36,7 @@ import org.slf4j.Logger;
 @Mod.EventBusSubscriber(modid=DMZHideout.MOD_ID,bus=Mod.EventBusSubscriber.Bus.FORGE)
 public final class MedRecipes {
     public record Ingredient(String itemId,int count) { }
-    public record Recipe(String id,String label,String output,int count,
+    public record Recipe(String id,String label,String category,String output,int count,
                          List<Ingredient> ingredients) { }
     private static final Logger LOG=LogUtils.getLogger();
     private static volatile Map<String,Recipe> RECIPES=Map.of();
@@ -78,6 +78,7 @@ public final class MedRecipes {
                         required.forEach((key,value)->ingredients.add(new Ingredient(key,value)));
                         next.put(id,new Recipe(id,
                                 json.has("label")?json.get("label").getAsString():output,
+                                json.has("category")?json.get("category").getAsString():"other",
                                 output,count,List.copyOf(ingredients)));
                     }catch(RuntimeException ex){
                         LOG.error("Invalid medical recipe {}: {}",entry.getKey(),ex.toString());
@@ -111,6 +112,7 @@ public final class MedRecipes {
             JsonObject j=new JsonObject();
             j.addProperty("id",r.id());
             j.addProperty("label",r.label());
+            j.addProperty("category",r.category());
             j.addProperty("output",r.output());
             j.addProperty("count",r.count());
             JsonArray required=new JsonArray();
@@ -126,71 +128,99 @@ public final class MedRecipes {
         return list;
     }
 
+
+    /** Server-authoritative availability for tooltips; locked stacks are excluded. */
+    public static JsonObject stashStock(ServerPlayer player,BlockPos center) {
+        JsonObject counts=new JsonObject();
+        BlockPos pos=StashApi.findAdjacent(player.serverLevel(),center,player);
+        for(Recipe recipe:RECIPES.values())for(Ingredient ing:recipe.ingredients()){
+            if(counts.has(ing.itemId()))continue;
+            int qty=pos==null?0:StashApi.count(player.serverLevel(),pos,player,
+                    stack->stack.is(known(ing.itemId())));
+            counts.addProperty(ing.itemId(),qty);
+        }
+        return counts;
+    }
+
+    /**
+     * Instant crafting: locked Stash stock is excluded. Materials come from
+     * the adjacent Stash FIRST, then the player's vanilla inventory. The
+     * destination prefers the Stash (if selected) but can safely fall back.
+     */
     public static boolean craft(ServerPlayer player,BlockPos center,String recipeId,
-                                boolean inputStash,boolean outputStash) {
+                                boolean stashFirst,boolean outputStashFirst) {
         if(!player.serverLevel().getBlockState(center).is(HideoutBlocks.MED_STATION.get()))
             return false;
         if(player.distanceToSqr(center.getX()+0.5,center.getY()+0.5,center.getZ()+0.5)>64)
             return false;
-        Recipe r=RECIPES.get(recipeId);
-        if(r==null)return false;
+        Recipe recipe=RECIPES.get(recipeId);
+        if(recipe==null)return false;
         BlockPos stash=StashApi.findAdjacent(player.serverLevel(),center,player);
-        if((inputStash||outputStash)&&stash==null)return false;
-        ItemStack result=new ItemStack(known(r.output()),r.count());
-        if(outputStash) {
-            if(!StashApi.canInsert(player.serverLevel(),stash,player,result))return false;
-        } else if(player.getInventory().getFreeSlot()<0) return false;
+        ItemStack output=new ItemStack(known(recipe.output()),recipe.count());
 
-        for(Ingredient i:r.ingredients()){
-            Item item=known(i.itemId());
-            int present=0;
-            if(inputStash)present=StashApi.count(player.serverLevel(),stash,player,
-                    s->s.is(item));
-            else for(ItemStack stack:player.getInventory().items)
-                if(stack.is(item))present+=stack.getCount();
-            if(present<i.count())return false;
+        // Authoritative aggregate preflight across BOTH inventory sources.
+        for(Ingredient ing:recipe.ingredients()){
+            Item ingredient=known(ing.itemId());
+            int fromStash=stash==null?0:StashApi.count(player.serverLevel(),stash,player,
+                    stack->stack.is(ingredient));
+            int fromPlayer=0;
+            for(ItemStack stack:player.getInventory().items)
+                if(stack.is(ingredient))fromPlayer+=stack.getCount();
+            if(fromStash+fromPlayer<ing.count())return false;
         }
-
-        // Back up both inventories before any mutation. A failed insertion
-        // or item-handler exception cannot silently consume materials.
         List<ItemStack> playerBefore=new ArrayList<>();
         player.getInventory().items.forEach(stack->playerBefore.add(stack.copy()));
         List<ItemStack> stashBefore=stash==null?List.of():
                 StashApi.snapshot(player.serverLevel(),stash,player);
-        try {
-            for(Ingredient i:r.ingredients()){
-                Item item=known(i.itemId());
-                if(inputStash) {
-                    if(!StashApi.extract(player.serverLevel(),stash,player,
-                            stack->stack.is(item),i.count()))
-                        throw new IllegalStateException("Stash ingredient removal failed");
-                } else {
-                    int remaining=i.count();
-                    for(ItemStack stack:player.getInventory().items){
-                        if(!stack.is(item))continue;
-                        int n=Math.min(remaining,stack.getCount());
-                        stack.shrink(n);
-                        remaining-=n;
-                        if(remaining==0)break;
+        try{
+            for(Ingredient ing:recipe.ingredients()){
+                Item ingredient=known(ing.itemId());
+                int need=ing.count();
+                if(stashFirst && stash!=null){
+                    int take=Math.min(need,StashApi.count(player.serverLevel(),stash,player,
+                            stack->stack.is(ingredient)));
+                    if(take>0){
+                        if(!StashApi.extract(player.serverLevel(),stash,player,
+                                stack->stack.is(ingredient),take))
+                            throw new IllegalStateException("Stash extraction refused");
+                        need-=take;
                     }
-                    if(remaining!=0)throw new IllegalStateException("Ingredient removal failed");
                 }
+                for(ItemStack stack:player.getInventory().items){
+                    if(need==0)break;
+                    if(!stack.is(ingredient))continue;
+                    int take=Math.min(need,stack.getCount());
+                    stack.shrink(take);
+                    need-=take;
+                }
+                if(need>0 && !stashFirst && stash!=null){
+                    if(!StashApi.extract(player.serverLevel(),stash,player,
+                            stack->stack.is(ingredient),need))
+                        throw new IllegalStateException("Fallback Stash extraction refused");
+                    need=0;
+                }
+                if(need>0)throw new IllegalStateException("Insufficient inputs after preflight");
             }
             player.getInventory().setChanged();
-            boolean delivered=outputStash
-                    ?StashApi.insert(player.serverLevel(),stash,player,result)
-                    :player.getInventory().add(result);
-            if(!delivered)throw new IllegalStateException("Output insertion refused");
-            player.displayClientMessage(Component.literal(
-                    "医療品を製造しました： "+r.label()),true);
+            boolean delivered=false;
+            if(outputStashFirst && stash!=null)
+                delivered=StashApi.insert(player.serverLevel(),stash,player,output);
+            if(!delivered)delivered=player.getInventory().add(output.copy());
+            if(!delivered && !outputStashFirst && stash!=null)
+                delivered=StashApi.insert(player.serverLevel(),stash,player,output);
+            if(!delivered)throw new IllegalStateException("Both output destinations full");
+            player.displayClientMessage(Component.literal("医療品を製造しました："+
+                    recipe.label()),true);
+            HideoutNetwork.sendMedStock(player,center);
             return true;
-        }catch(RuntimeException failed){
-            if(stash!=null && !StashApi.restore(player.serverLevel(),stash,player,stashBefore))
-                LOG.error("CRITICAL: medical crafting rollback failed at {}",stash);
-            for(int n=0;n<playerBefore.size();n++)
-                player.getInventory().items.set(n,playerBefore.get(n).copy());
+        }catch(RuntimeException error){
+            if(stash!=null && !StashApi.restore(
+                    player.serverLevel(),stash,player,stashBefore))
+                LOG.error("CRITICAL: Med Station Stash rollback failed at {}",stash);
+            for(int i=0;i<playerBefore.size();i++)
+                player.getInventory().items.set(i,playerBefore.get(i).copy());
             player.getInventory().setChanged();
-            LOG.error("Med Station craft canceled: {}",recipeId,failed);
+            LOG.error("Med Station crafting transaction rolled back: {}",recipeId,error);
             return false;
         }
     }
