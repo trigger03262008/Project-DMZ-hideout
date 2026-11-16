@@ -33,6 +33,7 @@ public final class HideoutNetwork {
             () -> VERSION, VERSION::equals, VERSION::equals);
     public enum Action {
         STASH_QUERY, STASH_NEXT, STASH_PREV, STASH_SORT, STASH_FILTER, STASH_LOCK,
+        STASH_SCROLL, STASH_SCROLL_TO,
         STASH_TOGGLE, STASH_UPGRADE,
         MED_HEAL, MED_CRAFT, TRADE_QUERY, TRADE_NEXT, TRADE_PREV, TRADE_BUY, TRADE_SELL
     }
@@ -133,9 +134,16 @@ public final class HideoutNetwork {
                     if (stash == null || !stash.canAccess(player)) return;
                     switch (req.action) {
                         case STASH_QUERY -> menu.search(req.a);
-                        case STASH_NEXT -> menu.navigate(1);
-                        case STASH_PREV -> menu.navigate(-1);
+                        case STASH_NEXT -> menu.scroll(6);
+                        case STASH_PREV -> menu.scroll(-6);
                         case STASH_SORT -> menu.sort();
+                        case STASH_SCROLL, STASH_SCROLL_TO -> {
+                            try {
+                                int value=Integer.parseInt(req.a);
+                                if(req.action==Action.STASH_SCROLL) menu.scroll(value);
+                                else menu.scrollTo(value);
+                            }catch(NumberFormatException ignored) { }
+                        }
                         case STASH_FILTER -> menu.filter();
                         case STASH_LOCK -> {
                             try {
