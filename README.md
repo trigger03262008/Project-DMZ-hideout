@@ -5,7 +5,9 @@
 ## What's new in v0.2.0 — three facility blocks
 
 - `dmzhideout:stash`: independent, saved super-sized storage with private/team sharing, an initial 270 slots and upgrades to 1350 slots (5 tiers, each +270). Upgrades cost tier×16 iron ingots, editable in future data-driven upgrade packs.
-- Search by display name or item registry ID, paging, sort, shift-click deposits, owner-only sharing mode switch. Nonempty stash cannot be normally mined; it must be emptied first.
+- Search by display name or registry ID, paging, three sort choices and shift-click deposits. Five category views (ALL/BLOCK/FOOD/GEAR/MED). **Shift + right-click** a stash item to lock/unlock it; locked items cannot be removed or spent by Trading Center or Med Station. Locks persist across saves.
+- Owner-only private/team sharing switch; teammates get access after explicitly enabling sharing. A nonempty stash cannot be normally mined; it must be emptied first. Owner-only empty-stash mining still works.
+- Starter upgrade costs: tier 1→2 = 16 iron, 2→3 = 32, 3→4 = 48, 4→5 = 64. Final economic balancing and data-driven upgrade materials are deferred.
 - `dmzhideout:med_station`: requires Health v1.0.1 and P.D.A v0.7.0 for full paid injury recovery; independent JSON-based medical crafting. Includes one starter bandage recipe using Minecraft materials, and has `required_mods` filtering for future Loot recipes.
 - `dmzhideout:trading_center`: three-column interface (trader/offer, settlement, adjacent stash) that delegates pricing and transactional authority to Traders v0.2.1.
 - Adjacent accessible stashes are discovered in the six face-adjacent positions. StashApi is publicly available for future Inventory integration; Inventory v0.0.0 still has no 2D grid system, so the stash uses normal slot storage until that API exists.
