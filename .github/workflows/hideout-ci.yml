@@ -19,6 +19,16 @@ jobs:
             src/main/java/dev/dmzhideout/client/TradeOfferSelection.java \
             src/test/java/dev/dmzhideout/client/TradeOfferSelectionSmokeTest.java
           java -ea -cp build/ui-tests dev.dmzhideout.client.TradeOfferSelectionSmokeTest
+      - name: Virtual Stash scrolling and basket hit-testing
+        run: |
+          mkdir -p build/scroll-tests
+          javac --release 17 -d build/scroll-tests \
+            src/main/java/dev/dmzhideout/menu/ScrollMath.java \
+            src/main/java/dev/dmzhideout/client/TradeGridHitTest.java \
+            src/test/java/dev/dmzhideout/menu/ScrollMathSmokeTest.java \
+            src/test/java/dev/dmzhideout/client/TradeGridHitTestSmokeTest.java
+          java -ea -cp build/scroll-tests dev.dmzhideout.menu.ScrollMathSmokeTest
+          java -ea -cp build/scroll-tests dev.dmzhideout.client.TradeGridHitTestSmokeTest
       - name: Radius, collision, and boundary visualization tests
         run: |
           mkdir -p build/pure
@@ -41,6 +51,6 @@ jobs:
         run: gradle clean build --no-daemon --max-workers=1 --stacktrace
       - uses: actions/upload-artifact@v4
         with:
-          name: project-dmz-hideout-0.2.1
+          name: project-dmz-hideout-0.3.0
           path: build/libs/*.jar
           if-no-files-found: error

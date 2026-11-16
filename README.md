@@ -1,6 +1,54 @@
-# Project DMZ: Hideout v0.2.1 — Trading Center Selection Fix
+# Project DMZ: Hideout v0.3.0 — Facility UI Overhaul
 
 **Minecraft 1.20.1 / Forge 47.4.28 / Java 17**. Independent mod `dmzhideout`, without mandatory P.D.A/Health/Inventory dependencies. The original Project DMZ design notes were reviewed; only the **Core and Core-generated zone** are part of this first slice.
+
+## v0.3.0: Tarkov-inspired Facility UI
+
+**Version compatibility:** Minecraft 1.20.1, Forge 47.4.28, Java 17.
+Replace Hideout v0.2.1 with v0.3.0 on both sides, plus Traders v0.3.0.
+Health v1.1.4 and P.D.A v0.7.0 are unchanged.
+
+### Med Station
+- Opens to CRAFT; top tabs switch to HEAL and back.
+- Searchable, category-filtered vertical crafting list, ingredient availability
+  (current Stash plus player), instant crafting, output amount and START buttons.
+- Inputs are taken from nearby authorized Stash first, then player inventory.
+  Outputs prefer Stash by default, and automatically fall back to inventory.
+  A button reverses the destination preference. Failed transactions restore
+  both item sources. Locked Stash items cannot be consumed.
+- HEAL displays Health client body-part HP, server quote and one APPLY action
+  for existing paid full-body treatment. No new Health APIs were required.
+- JSON recipe supports optional `category`; `craft_time: 0` is reserved for
+  future time-based crafting, but the current service always crafts instantly.
+
+### Stash
+- Left: locked, dim placeholders for future Inventory/Combat equipment.
+  These are not fake functional equipment slots.
+- Middle: real player model, vanilla armor + offhand + 27 inventory cells
+  + hotbar. Moves items using the vanilla server inventory.
+- Right: search, filter, sort, vertical mouse-wheel/dragbar row scrolling
+  instead of page buttons. Existing 270–1350 saved item slots are retained;
+  only 54 display cells synchronize at a time.
+- Owner/team sharing, upgrades and Shift+right-click item locks are retained.
+
+### Trading Center
+- Upper row of trader cards; FIVE cards per page with previous/next buttons.
+  New traders are read dynamically from JSON. Switching trader clears the
+  pending sale basket; no item is consumed by this operation.
+- BUY and SELL tabs. BUY still supports CASH, barter and Stash payment/output.
+- SELL has a 24-item-line virtual basket and right-hand scrollable Stash:
+  left click adds one, Shift+click adds a stack, drag from Stash into the basket,
+  right click basket to remove one or Shift+click to clear a line.
+- The buyback JSON `buy_from_player` list is the allowlist. Unbuyable and
+  locked Stash items are dimmed; the server rechecks everything on ADD and SELL.
+- The basket is a non-destructive preview until SELL is pressed. Total CASH
+  comes from Traders v0.3.0 and its server-side price multipliers. Failed
+  batch settlements roll back Stash items, rather than dropping them.
+- SELL requires an adjacent authorized Stash; BUY can still use player items.
+
+The three interfaces use original dark/industrial UI styling, not copied
+copyrighted images or textures. Actual screen appearance is subject to
+Minecraft GUI-scale preferences. Test with a world backup.
 
 ## v0.2.1 hotfix: Trading Center item selection
 
@@ -89,4 +137,4 @@ Java **17**, Gradle **8.8**, ForgeGradle 6:
 gradle clean build --no-daemon --max-workers=1
 ```
 
-Expected output `build/libs/project-dmz-hideout-0.2.1.jar`. GitHub Actions builds and publishes a downloadable JAR.
+Expected output `build/libs/project-dmz-hideout-0.3.0.jar`. GitHub Actions builds and publishes a downloadable JAR.
