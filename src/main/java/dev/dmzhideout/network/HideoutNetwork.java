@@ -35,7 +35,9 @@ public final class HideoutNetwork {
         STASH_QUERY, STASH_NEXT, STASH_PREV, STASH_SORT, STASH_FILTER, STASH_LOCK,
         STASH_SCROLL, STASH_SCROLL_TO,
         STASH_TOGGLE, STASH_UPGRADE,
-        MED_HEAL, MED_CRAFT, TRADE_QUERY, TRADE_NEXT, TRADE_PREV, TRADE_BUY, TRADE_SELL
+        MED_HEAL, MED_CRAFT, TRADE_QUERY, TRADE_NEXT, TRADE_PREV, TRADE_BUY, TRADE_SELL,
+        TRADE_SELECT_TRADER, TRADE_SCROLL, TRADE_SCROLL_TO,
+        TRADE_BASKET_ADD, TRADE_BASKET_REMOVE, TRADE_BATCH_SELL
     }
 
     private HideoutNetwork() { }
@@ -183,8 +185,33 @@ public final class HideoutNetwork {
                         menu.pos().equals(req.pos) && menu.stillValid(player)) {
                     switch (req.action) {
                         case TRADE_QUERY -> menu.search(req.a);
-                        case TRADE_NEXT -> menu.navigate(1);
-                        case TRADE_PREV -> menu.navigate(-1);
+                        case TRADE_NEXT -> menu.scroll(6);
+                        case TRADE_PREV -> menu.scroll(-6);
+                        case TRADE_SELECT_TRADER -> menu.selectTrader(player,req.a);
+                        case TRADE_SCROLL, TRADE_SCROLL_TO -> {
+                            try {
+                                int number=Integer.parseInt(req.a);
+                                if(req.action==Action.TRADE_SCROLL)menu.scroll(number);
+                                else menu.scrollTo(number);
+                            }catch(NumberFormatException ignored) { }
+                        }
+                        case TRADE_BASKET_ADD -> {
+                            try {
+                                menu.addToBasket(player,Integer.parseInt(req.a),
+                                        "all".equals(req.b));
+                            }catch(NumberFormatException ignored) { }
+                        }
+                        case TRADE_BASKET_REMOVE -> {
+                            try {
+                                menu.removeFromBasket(Integer.parseInt(req.a),
+                                        "all".equals(req.b));
+                            }catch(NumberFormatException ignored) { }
+                        }
+                        case TRADE_BATCH_SELL -> {
+                            if(!menu.confirmSale(player))
+                                player.displayClientMessage(Component.literal(
+                                        "売却失敗：価格・在庫・ロックを確認してください"),true);
+                        }
                         case TRADE_BUY, TRADE_SELL -> {
                             if (!TradingCompat.trade(player, req.pos, req.a, req.b,
                                     req.action==Action.TRADE_BUY,
