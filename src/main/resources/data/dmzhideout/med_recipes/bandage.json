@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "id": "dmzhideout:bandage",
+  "label": "包帯 / Bandage",
+  "required_mods": [
+    "dmzcore"
+  ],
+  "output": "dmzcore:bandage",
+  "count": 1,
+  "ingredients": [
+    {
+      "item": "minecraft:string",
+      "count": 2
+    },
+    {
+      "item": "minecraft:paper",
+      "count": 1
+    }
+  ]
+}

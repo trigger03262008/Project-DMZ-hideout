@@ -8,6 +8,11 @@ import dev.dmzhideout.menu.StashMenu;
 import dev.dmzhideout.menu.MedMenu;
 import dev.dmzhideout.menu.TradeMenu;
 import java.util.Optional;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonParser;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.fml.DistExecutor;
+import net.minecraftforge.network.PacketDistributor;
 import java.util.function.Supplier;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
@@ -35,6 +40,9 @@ public final class HideoutNetwork {
     public static void init() {
         CHANNEL.registerMessage(0, Request.class, Request::encode, Request::decode,
                 Request::handle, Optional.of(NetworkDirection.PLAY_TO_SERVER));
+        CHANNEL.registerMessage(1, RecipeCatalog.class,
+                RecipeCatalog::encode,RecipeCatalog::decode,RecipeCatalog::handle,
+                Optional.of(NetworkDirection.PLAY_TO_CLIENT));
     }
 
     public static void request(Action action, BlockPos pos) {
@@ -48,6 +56,28 @@ public final class HideoutNetwork {
         if (action == null || pos == null || a == null || b == null ||
                 a.length() > 128 || b.length() > 128) return;
         CHANNEL.sendToServer(new Request(action, pos, a, b, inputStash, outputStash));
+    }
+
+    public static void sendRecipes(ServerPlayer player) {
+        String json=dev.dmzhideout.med.MedRecipes.snapshot().toString();
+        if(json.length()<=20000)
+            CHANNEL.send(PacketDistributor.PLAYER.with(()->player),new RecipeCatalog(json));
+    }
+
+    private record RecipeCatalog(String json) {
+        static void encode(RecipeCatalog packet,FriendlyByteBuf buf) {
+            buf.writeUtf(packet.json,20000);
+        }
+        static RecipeCatalog decode(FriendlyByteBuf buf) {
+            return new RecipeCatalog(buf.readUtf(20000));
+        }
+        static void handle(RecipeCatalog packet,Supplier<NetworkEvent.Context> supplier) {
+            NetworkEvent.Context ctx=supplier.get();
+            ctx.enqueueWork(()->DistExecutor.unsafeRunWhenOn(Dist.CLIENT,
+                    ()->()->dev.dmzhideout.med.MedClientRecipes.update(
+                            JsonParser.parseString(packet.json).getAsJsonArray())));
+            ctx.setPacketHandled(true);
+        }
     }
 
     private record Request(Action action, BlockPos pos, String a, String b,
