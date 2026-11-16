@@ -32,7 +32,7 @@ public final class TradeScreen extends AbstractContainerScreen<TradeMenu> {
     private static final int GREEN=0xFF9BDBBA,WHITE=0xFFE7EFE9,
             GRAY=0xFF9EB3A8,GOLD=0xFFFFCF80,RED=0xFFF47E72;
     private static final int TRADERS_PER_PAGE=5,BUYS_PER_VIEW=6;
-    private boolean sellMode=true,fromStash=true,toStash=true,scrollDrag;
+    private boolean sellMode=true,fromStash=false,toStash=false,scrollDrag;
     private int pendingStash=-1;
     private String traderId="",buyOfferId="",sentTrader="";
     private int traderPage,productOffset;
