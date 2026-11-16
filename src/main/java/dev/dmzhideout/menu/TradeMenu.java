@@ -233,11 +233,11 @@ public final class TradeMenu extends AbstractContainerMenu {
                     positions.add(i);
             }
         }
-        maxScroll=Math.max(0,(positions.size()+STASH_COLS-1)/STASH_COLS-STASH_ROWS);
-        scrollRow=Math.min(scrollRow,maxScroll);
+        maxScroll=ScrollMath.maxScroll(positions.size(),STASH_COLS,STASH_ROWS);
+        scrollRow=ScrollMath.clamp(scrollRow,maxScroll);
         for(int i=0;i<STASH_VISIBLE;i++){
-            int n=scrollRow*STASH_COLS+i;
-            mapped[i]=n<positions.size()?positions.get(n):-1;
+            int n=ScrollMath.mappedIndex(scrollRow,i,STASH_COLS,positions.size());
+            mapped[i]=n>=0?positions.get(n):-1;
             state.set(6+BASKET_VISIBLE+i,stash!=null&&
                     mapped[i]>=0&&stash.isLocked(mapped[i])?1:0);
         }

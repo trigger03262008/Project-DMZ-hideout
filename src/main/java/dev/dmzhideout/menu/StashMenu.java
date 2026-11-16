@@ -197,11 +197,11 @@ public final class StashMenu extends AbstractContainerMenu {
                         stash.storage().getStackInSlot(i).getCount()).reversed();
             entries.sort(cmp);
         }
-        maxScroll=Math.max(0,(entries.size()+COLUMNS-1)/COLUMNS-VISIBLE_ROWS);
-        scrollRow=Math.min(maxScroll,scrollRow);
+        maxScroll=ScrollMath.maxScroll(entries.size(),COLUMNS,VISIBLE_ROWS);
+        scrollRow=ScrollMath.clamp(scrollRow,maxScroll);
         for(int i=0;i<VISIBLE;i++){
-            int at=scrollRow*COLUMNS+i;
-            mapped[i]=at<entries.size()?entries.get(at):-1;
+            int at=ScrollMath.mappedIndex(scrollRow,i,COLUMNS,entries.size());
+            mapped[i]=at>=0?entries.get(at):-1;
             info.set(5+i,mapped[i]>=0&&stash.isLocked(mapped[i])?1:0);
         }
         info.set(0,scrollRow);

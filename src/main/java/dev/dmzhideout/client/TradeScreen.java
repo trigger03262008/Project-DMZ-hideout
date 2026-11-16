@@ -180,14 +180,12 @@ public final class TradeScreen extends AbstractContainerScreen<TradeMenu> {
     }
 
     private int rightVisible(double mx,double my){
-        double x=mx-leftPos-303,y=my-topPos-109;
-        if(x<0||x>=12*18||y<0||y>=6*18)return -1;
-        return (int)(y/18)*12+(int)(x/18);
+        return TradeGridHitTest.slot(mx-leftPos,my-topPos,
+                303,109,12,6,18);
     }
     private int basketVisible(double mx,double my){
-        double x=mx-leftPos-22,y=my-topPos-110;
-        if(x<0||x>=8*18||y<0||y>=3*18)return -1;
-        return (int)(y/18)*8+(int)(x/18);
+        return TradeGridHitTest.slot(mx-leftPos,my-topPos,
+                22,110,8,3,18);
     }
 
     @Override protected void renderBg(GuiGraphics g,float partial,int mx,int my){
