@@ -2,6 +2,8 @@ package dev.dmzhideout.block;
 
 import dev.dmzhideout.menu.StashMenu;
 import java.util.UUID;
+import java.util.Set;
+import java.util.HashSet;
 import java.util.function.Predicate;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
@@ -25,6 +27,7 @@ public final class StashBlockEntity extends BlockEntity implements MenuProvider 
     public static final int SLOTS_PER_LEVEL = 270;
     public static final int MAX_LEVEL = 5;
     public static final int MAX_SLOTS = SLOTS_PER_LEVEL * MAX_LEVEL;
+    private final Set<Integer> locked = new HashSet<>();
     private int revision;
     public int revision() { return revision; }
     private UUID owner;
@@ -48,6 +51,18 @@ public final class StashBlockEntity extends BlockEntity implements MenuProvider 
             owner = player.getUUID();
             setChanged();
         }
+    }
+
+    public boolean isLocked(int slot) { return locked.contains(slot); }
+
+    /** Locked slots cannot be withdrawn or sold until a member unlocks them. */
+    public boolean toggleLock(ServerPlayer player, int slot) {
+        if (!canAccess(player) || slot < 0 || slot >= capacity() ||
+                storage.getStackInSlot(slot).isEmpty()) return false;
+        if (!locked.add(slot)) locked.remove(slot);
+        revision++;
+        setChanged();
+        return true;
     }
 
     public boolean hasOwner() { return owner != null; }
@@ -125,7 +140,8 @@ public final class StashBlockEntity extends BlockEntity implements MenuProvider 
         int count = 0;
         for (int i = 0; i < capacity(); i++) {
             ItemStack stack = storage.getStackInSlot(i);
-            if (!stack.isEmpty() && matcher.test(stack)) count += stack.getCount();
+            if (!locked.contains(i) && !stack.isEmpty() &&
+                    matcher.test(stack)) count += stack.getCount();
         }
         return count;
     }
@@ -135,7 +151,7 @@ public final class StashBlockEntity extends BlockEntity implements MenuProvider 
         int left = amount;
         for (int i = 0; i < capacity() && left > 0; i++) {
             ItemStack stack = storage.getStackInSlot(i);
-            if (stack.isEmpty() || !matcher.test(stack)) continue;
+            if (locked.contains(i) || stack.isEmpty() || !matcher.test(stack)) continue;
             int take = Math.min(left, stack.getCount());
             storage.extractItem(i, take, false);
             left -= take;
@@ -160,6 +176,10 @@ public final class StashBlockEntity extends BlockEntity implements MenuProvider 
         team = tag.getString("SharedTeam");
         shared = tag.getBoolean("Shared");
         tier = Math.max(1, Math.min(MAX_LEVEL, tag.getInt("Tier")));
+        locked.clear();
+        for (int n : tag.getIntArray("Locked")) {
+            if (n >= 0 && n < capacity()) locked.add(n);
+        }
         if (tag.contains("Items", net.minecraft.nbt.Tag.TAG_COMPOUND))
             storage.deserializeNBT(tag.getCompound("Items"));
     }
@@ -172,5 +192,6 @@ public final class StashBlockEntity extends BlockEntity implements MenuProvider 
         tag.putBoolean("Shared", shared);
         tag.putInt("Tier", tier);
         tag.put("Items", storage.serializeNBT());
+        tag.putIntArray("Locked", locked.stream().sorted().mapToInt(Integer::intValue).toArray());
     }
 }
