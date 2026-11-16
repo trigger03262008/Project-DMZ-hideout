@@ -50,3 +50,13 @@ for method in ("findAdjacent","canInsert","insert","extract","snapshot","restore
     assert method in bridge
 
 print("Hideout v0.2.0 facility assets, medical recipes and storage bridge: OK")
+
+# Custom left-hand offer clicks MUST be prioritized over Minecraft vanilla
+# AbstractContainerScreen handling (which may consume unhandled clicks).
+screen=read("src/main/java/dev/dmzhideout/client/TradeScreen.java")
+custom=screen.index("TradeOfferSelection.offerIndex(")
+vanilla=screen.index("return super.mouseClicked(mx,my,button);")
+assert custom<vanilla
+assert "selectedPurchase=selected.purchase()" in screen
+assert "boolean selected=offer.purchase()==selectedPurchase" in screen
+print("Trading Center UI event ordering: OK")

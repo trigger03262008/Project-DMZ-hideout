@@ -30,6 +30,7 @@ import net.minecraftforge.registries.ForgeRegistries;
 public final class TradeScreen extends AbstractContainerScreen<TradeMenu> {
     private static final int GREEN=0xFF88E5B9, GOLD=0xFFFFD58E, TEXT=0xFFE3EFE7;
     private String traderId="", offerId="";
+    private boolean selectedPurchase;
     private int traderIndex, offerPage;
     private boolean fromStash, toStash;
     private EditBox search;
@@ -127,15 +128,18 @@ public final class TradeScreen extends AbstractContainerScreen<TradeMenu> {
         if(all.isEmpty())return;
         traderIndex=Math.floorMod(traderIndex+delta,all.size());
         traderId=all.get(traderIndex).get("id").getAsString();
-        offerId="";offerPage=0;
+        offerId="";selectedPurchase=true;offerPage=0;
     }
 
     private Offer selectedOffer() {
         var list=offers(selectedTrader());
-        for(Offer o:list) if(str(o.data(),"id","").equals(offerId))return o;
+        for(Offer o:list)
+            if(o.purchase()==selectedPurchase &&
+                    str(o.data(),"id","").equals(offerId))return o;
         if(list.isEmpty())return null;
         Offer first=list.get(0);
         offerId=str(first.data(),"id","");
+        selectedPurchase=first.purchase();
         return first;
     }
 
@@ -164,6 +168,8 @@ public final class TradeScreen extends AbstractContainerScreen<TradeMenu> {
 
     @Override protected void renderLabels(GuiGraphics g,int mx,int my) {
         JsonObject trader=selectedTrader();
+        // Resolve the initial/default selection before drawing the highlight.
+        Offer currentSelection=selectedOffer();
         text(g,"TRADERS / 商品",12,8,GREEN,143);
         text(g,trader==null?"Tradersが必要":str(trader,"name",traderId),
                 37,25,TEXT,82);
@@ -183,7 +189,8 @@ public final class TradeScreen extends AbstractContainerScreen<TradeMenu> {
             Offer offer=products.get(n);
             JsonObject o=offer.data();
             int y=48+i*23;
-            boolean selected=str(o,"id","").equals(offerId);
+            boolean selected=offer.purchase()==selectedPurchase &&
+                    str(o,"id","").equals(offerId);
             g.fill(9,y,152,y+21,selected?0xFF567858:0xFF354940);
             String label=str(o,"label",str(o,"id",""));
             String flag=offer.purchase()?"買":"売";
@@ -193,7 +200,7 @@ public final class TradeScreen extends AbstractContainerScreen<TradeMenu> {
         }
         text(g,(offerPage+1)+"/"+pageCount,71,222,TEXT,71);
 
-        Offer offer=selectedOffer();
+        Offer offer=currentSelection;
         if(offer!=null){
             JsonObject data=offer.data();
             text(g,str(data,"label",offerId),171,48,GREEN,116);
@@ -214,19 +221,22 @@ public final class TradeScreen extends AbstractContainerScreen<TradeMenu> {
         if(!menu.hasStash())text(g,"収納への直接取引は使用不可",305,197,GOLD,156);
     }
     @Override public boolean mouseClicked(double mx,double my,int button) {
-        if(super.mouseClicked(mx,my,button))return true;
-        if(button!=0)return false;
-        int x=(int)mx-leftPos,y=(int)my-topPos;
-        if(x>=9&&x<=152&&y>=48&&y<48+7*23){
-            int row=(y-48)/23;
+        // AbstractContainerScreen can consume the left click even when it did
+        // not hit an inventory Slot. Handle custom trader rows FIRST.
+        if(button==0) {
             List<Offer> list=offers(selectedTrader());
-            int n=offerPage*7+row;
-            if(n<list.size()) {
-                offerId=str(list.get(n).data(),"id","");
+            int index=TradeOfferSelection.offerIndex(
+                    mx,my,leftPos,topPos,offerPage,list.size());
+            if(index>=0) {
+                Offer selected=list.get(index);
+                offerId=str(selected.data(),"id","");
+                selectedPurchase=selected.purchase();
                 return true;
             }
         }
-        return false;
+        // Buttons, the stash search field and vanilla slot handling still
+        // belong to the parent screen.
+        return super.mouseClicked(mx,my,button);
     }
     @Override public void render(GuiGraphics g,int mx,int my,float partial) {
         renderBackground(g);

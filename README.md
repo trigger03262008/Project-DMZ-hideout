@@ -1,6 +1,18 @@
-# Project DMZ: Hideout v0.2.0 — Facilities
+# Project DMZ: Hideout v0.2.1 — Trading Center Selection Fix
 
 **Minecraft 1.20.1 / Forge 47.4.28 / Java 17**. Independent mod `dmzhideout`, without mandatory P.D.A/Health/Inventory dependencies. The original Project DMZ design notes were reviewed; only the **Core and Core-generated zone** are part of this first slice.
+
+## v0.2.1 hotfix: Trading Center item selection
+
+- Fixed a GUI input ordering bug that prevented left-clicking a sell/buy offer
+  from selecting it. Custom stock rows now receive clicks before
+  `AbstractContainerScreen.mouseClicked` handles general screen interaction.
+- The selected offer is highlighted and its exact price/barter requirements
+  are shown in the center. Both sale and buyback offers can be selected.
+- Added page-aware hit-testing regression coverage; clicks on the 2px gaps,
+  the stash preview and UI navigation buttons do not select an offer.
+- No world/save data migration and no changes to Health, Traders or PDA.
+  Replace only Hideout v0.2.0 with v0.2.1 on client and server.
 
 ## What's new in v0.2.0 — three facility blocks
 
@@ -77,4 +89,4 @@ Java **17**, Gradle **8.8**, ForgeGradle 6:
 gradle clean build --no-daemon --max-workers=1
 ```
 
-Expected output `build/libs/project-dmz-hideout-0.2.0.jar`. GitHub Actions builds and publishes a downloadable JAR.
+Expected output `build/libs/project-dmz-hideout-0.2.1.jar`. GitHub Actions builds and publishes a downloadable JAR.
