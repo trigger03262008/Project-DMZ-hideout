@@ -52,17 +52,20 @@ public final class StashMenu extends AbstractContainerMenu {
             public int getSlots() { return VISIBLE; }
             private int slotIndex(int n) { return n >= 0 && n < VISIBLE ? map[n] : -1; }
             public ItemStack getStackInSlot(int n) {
-                if (StashMenu.this.stash == null) return clientMirror.getStackInSlot(n);
+                if (!(StashMenu.this.inventory.player instanceof ServerPlayer))
+                    return clientMirror.getStackInSlot(n);
                 int actual = slotIndex(n);
                 return actual < 0 ? ItemStack.EMPTY : StashMenu.this.stash.storage().getStackInSlot(actual);
             }
             public ItemStack insertItem(int n, ItemStack stack, boolean simulate) {
-                if (StashMenu.this.stash == null) return stack;
+                if (!(StashMenu.this.inventory.player instanceof ServerPlayer) ||
+                        StashMenu.this.stash == null) return stack;
                 int actual = slotIndex(n);
                 return actual < 0 ? stack : StashMenu.this.stash.storage().insertItem(actual, stack, simulate);
             }
             public ItemStack extractItem(int n, int amount, boolean simulate) {
-                if (StashMenu.this.stash == null) return ItemStack.EMPTY;
+                if (!(StashMenu.this.inventory.player instanceof ServerPlayer) ||
+                        StashMenu.this.stash == null) return ItemStack.EMPTY;
                 int actual = slotIndex(n);
                 return actual < 0 ? ItemStack.EMPTY :
                         StashMenu.this.stash.storage().extractItem(actual, amount, simulate);
@@ -70,7 +73,8 @@ public final class StashMenu extends AbstractContainerMenu {
             public int getSlotLimit(int n) { return 64; }
             public boolean isItemValid(int n, ItemStack stack) { return true; }
             public void setStackInSlot(int n, ItemStack stack) {
-                if (StashMenu.this.stash == null) clientMirror.setStackInSlot(n, stack);
+                if (!(StashMenu.this.inventory.player instanceof ServerPlayer))
+                    clientMirror.setStackInSlot(n, stack);
                 else {
                     int actual = slotIndex(n);
                     if (actual >= 0) StashMenu.this.stash.storage().setStackInSlot(actual, stack);
@@ -109,7 +113,7 @@ public final class StashMenu extends AbstractContainerMenu {
     public void updated() { rebuild(); }
 
     private void rebuild() {
-        if (stash == null) return;
+        if (stash == null || !(inventory.player instanceof ServerPlayer)) return;
         List<Integer> indexes = new ArrayList<>();
         for (int i = 0; i < stash.capacity(); i++) {
             ItemStack stack = stash.storage().getStackInSlot(i);
@@ -142,7 +146,8 @@ public final class StashMenu extends AbstractContainerMenu {
     }
 
     @Override public void broadcastChanges() {
-        if (stash != null && version != stash.revision()) rebuild();
+        if (stash != null && inventory.player instanceof ServerPlayer &&
+                version != stash.revision()) rebuild();
         super.broadcastChanges();
     }
 

@@ -68,6 +68,26 @@ public final class StashApi {
         return stash != null && stash.extractMatching(matcher, amount);
     }
 
+    /**
+     * Trusted server-only rollback hook. Used when a multi-source settlement
+     * fails; restores precisely one previous snapshot with no dropped items.
+     */
+    public static boolean restore(ServerLevel level, BlockPos pos,
+                                  ServerPlayer player, List<ItemStack> previous) {
+        StashBlockEntity stash = check(level, pos, player);
+        if (stash == null || previous == null || previous.size() != stash.capacity())
+            return false;
+        for (int i = 0; i < previous.size(); i++) {
+            ItemStack stack = previous.get(i);
+            if (stack == null || stack.getCount() > stack.getMaxStackSize())
+                return false;
+        }
+        for (int i = 0; i < previous.size(); i++)
+            stash.storage().setStackInSlot(i, previous.get(i).copy());
+        stash.setChanged();
+        return true;
+    }
+
     public static List<ItemStack> snapshot(ServerLevel level, BlockPos pos,
                                             ServerPlayer player) {
         StashBlockEntity stash = check(level, pos, player);

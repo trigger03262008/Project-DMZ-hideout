@@ -156,7 +156,9 @@ public final class SafeZoneEvents {
     public static void explosion(ExplosionEvent.Detonate event) {
         if (!(event.getLevel() instanceof ServerLevel level)) return;
         // A blast in / near a base must not remove its protected blocks.
-        event.getAffectedBlocks().removeIf(pos -> isSafe(level, pos));
+        event.getAffectedBlocks().removeIf(pos -> isSafe(level, pos)
+                || level.getBlockEntity(pos) instanceof StashBlockEntity stash &&
+                        !stash.isEmpty());
         if (HideoutConfig.PROTECT_FROM_DAMAGE.get())
             event.getAffectedEntities().removeIf(entity ->
                     entity instanceof ServerPlayer player &&
