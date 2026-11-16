@@ -64,7 +64,22 @@ public final class MedScreen extends AbstractContainerScreen<MedMenu> {
                 recipes.get(Math.min(recipeIndex,recipes.size()-1))
                     .get("label").getAsString();
         g.drawString(font,font.plainSubstrByWidth(name,230),13,114,0xFFE4ECE7,false);
-        g.drawString(font,"必要素材はレシピJSONで管理 / Loot拡張可",13,168,0xFF9DBCB6,false);
+        if(!recipes.isEmpty()) {
+            var recipe=recipes.get(Math.min(recipeIndex,recipes.size()-1));
+            var materials=recipe.getAsJsonArray("ingredients");
+            StringBuilder required=new StringBuilder("素材: ");
+            for(var ingredient:materials) {
+                var entry=ingredient.getAsJsonObject();
+                if(required.length()>4)required.append(" / ");
+                required.append(entry.get("item").getAsString())
+                        .append(" ×").append(entry.get("count").getAsInt());
+            }
+            g.drawString(font,font.plainSubstrByWidth(required.toString(),232),
+                    13,168,0xFF9DBCB6,false);
+        } else {
+            g.drawString(font,"製造用のレシピJSONを追加できます",
+                    13,168,0xFF9DBCB6,false);
+        }
     }
     @Override public void render(GuiGraphics g,int mx,int my,float delta) {
         renderBackground(g);

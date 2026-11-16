@@ -140,8 +140,10 @@ public final class HideoutNetwork {
                                 "治療できません：症状・CASH・連携MODを確認してください"),true);
                         menu.broadcastChanges();
                     } else if (req.action == Action.MED_CRAFT) {
-                        dev.dmzhideout.med.MedRecipes.craft(player,req.pos,req.a,
-                                req.inputStash,req.outputStash);
+                        if(!dev.dmzhideout.med.MedRecipes.craft(player,req.pos,req.a,
+                                req.inputStash,req.outputStash))
+                            player.displayClientMessage(Component.literal(
+                                    "製造不可：素材・レシピ・収納先を確認してください"),true);
                     }
                 } else if (player.containerMenu instanceof TradeMenu menu &&
                         menu.pos().equals(req.pos) && menu.stillValid(player)) {
