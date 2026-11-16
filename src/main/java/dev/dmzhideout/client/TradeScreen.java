@@ -33,6 +33,7 @@ public final class TradeScreen extends AbstractContainerScreen<TradeMenu> {
             GRAY=0xFF9EB3A8,GOLD=0xFFFFCF80,RED=0xFFF47E72;
     private static final int TRADERS_PER_PAGE=5,BUYS_PER_VIEW=6;
     private boolean sellMode=true,fromStash=true,toStash=true,scrollDrag;
+    private int pendingStash=-1;
     private String traderId="",buyOfferId="",sentTrader="";
     private int traderPage,productOffset;
     private EditBox search;
@@ -308,8 +309,10 @@ public final class TradeScreen extends AbstractContainerScreen<TradeMenu> {
             if(stash>=0&&button==0){
                 ItemStack item=menu.slots.get(stash).getItem();
                 if(!item.isEmpty()&&!menu.lockedVisible(stash)&&isEligible(item)){
-                    HideoutNetwork.request(Action.TRADE_BASKET_ADD,menu.pos(),
-                            Integer.toString(stash),hasShiftDown()?"all":"one",false,false);
+                    if(hasShiftDown())
+                        HideoutNetwork.request(Action.TRADE_BASKET_ADD,menu.pos(),
+                                Integer.toString(stash),"all",false,false);
+                    else pendingStash=stash; // release after click OR drag-to-basket
                 }
                 return true;
             }
@@ -342,10 +345,20 @@ public final class TradeScreen extends AbstractContainerScreen<TradeMenu> {
     }
     @Override public boolean mouseDragged(double mx,double my,int button,double dx,double dy){
         if(scrollDrag && button==0){scrollTo(my-topPos);return true;}
+        if(pendingStash>=0&&button==0)return true;
         return super.mouseDragged(mx,my,button,dx,dy);
     }
     @Override public boolean mouseReleased(double mx,double my,int button){
         if(scrollDrag&&button==0){scrollDrag=false;return true;}
+        if(pendingStash>=0&&button==0){
+            int source=pendingStash;
+            pendingStash=-1;
+            // A click on the Stash OR a drag into the SELL basket adds one.
+            if(sellMode&&(rightVisible(mx,my)>=0||basketVisible(mx,my)>=0))
+                HideoutNetwork.request(Action.TRADE_BASKET_ADD,menu.pos(),
+                        Integer.toString(source),"one",false,false);
+            return true;
+        }
         return super.mouseReleased(mx,my,button);
     }
 
@@ -376,6 +389,8 @@ public final class TradeScreen extends AbstractContainerScreen<TradeMenu> {
                 (sellMode?menu.quote()>0:selectedBuy()!=null);
         renderBackground(g);
         super.render(g,mx,my,partial);
+        if(pendingStash>=0 && pendingStash<TradeMenu.STASH_VISIBLE)
+            g.renderItem(menu.slots.get(pendingStash).getItem(),mx-8,my-8);
         renderTooltip(g,mx,my);
     }
 }
