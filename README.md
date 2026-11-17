@@ -1,6 +1,23 @@
-# Project DMZ: Hideout v0.3.0 — Facility UI Overhaul
+# Project DMZ: Hideout v0.3.1 — Medical Treatment and CASH Hotfix
 
 **Minecraft 1.20.1 / Forge 47.4.28 / Java 17**. Independent mod `dmzhideout`, without mandatory P.D.A/Health/Inventory dependencies. The original Project DMZ design notes were reviewed; only the **Core and Core-generated zone** are part of this first slice.
+
+## v0.3.1: Med Station treatment and CASH display fix
+
+- Med Station and Trading Center now show the player's current CASH balance
+  through P.D.A's existing synchronized read-only client cache. No extra
+  wallet ledger or P.D.A protocol changes.
+- Med Station now checks displayed CASH against the server's treatment quote,
+  disabling APPLY when funds are insufficient.
+- The treatment bridge tries Health v1.1.4+ `HealthIntegrationApi` first,
+  and supports earlier Health 1.1.x versions that lack the new quote/heal
+  methods using their own public read/write APIs.
+- Health API reflection errors now emit a diagnostic in the server log
+  (once per error type), instead of silently returning an unexplained -1.
+- The HEAL tab reports insufficient funds or missing Health/P.D.A more
+  clearly. CASH is still debited/credited only by server-side P.D.A CashApi.
+- No changes to Hideout world data, Stash NBT, Traders, Inventory or P.D.A.
+  Replace Hideout v0.3.0 with **v0.3.1** on both client and server.
 
 ## v0.3.0: Tarkov-inspired Facility UI
 

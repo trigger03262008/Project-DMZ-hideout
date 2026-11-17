@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Independent static checks for the v0.3.0 standalone facility slice."""
+"""Independent static checks for the v0.3.1 standalone facility slice."""
 import json
 from pathlib import Path
 
@@ -39,8 +39,8 @@ assert len(recipe["ingredients"])>=1
 assert all(i["count"]>0 and ":" in i["item"] for i in recipe["ingredients"])
 
 assert js("src/main/resources/pack.mcmeta")["pack"]["pack_format"]==15
-assert "project-dmz-hideout-0.3.0" in read(".github/workflows/hideout-ci.yml")
-assert "version = '0.3.0'" in read("build.gradle")
+assert "project-dmz-hideout-0.3.1" in read(".github/workflows/hideout-ci.yml")
+assert "version = '0.3.1'" in read("build.gradle")
 source=read("src/main/java/dev/dmzhideout/block/StashBlockEntity.java")
 assert "MAX_LEVEL = 5" in source and "SLOTS_PER_LEVEL = 270" in source
 for token in ("setChanged()","getIntArray(\"Locked\")","toggleShared","upgrade","insert("):
@@ -49,7 +49,7 @@ bridge=read("src/main/java/dev/dmzhideout/api/StashApi.java")
 for method in ("findAdjacent","canInsert","insert","extract","snapshot","restore","spendableSnapshot"):
     assert method in bridge
 
-print("Hideout v0.3.0 facility assets, medical recipes and storage bridge: OK")
+print("Hideout v0.3.1 facility assets, medical recipes and storage bridge: OK")
 
 # Regression: custom grid selection and basket controls precede vanilla
 # container-slot handling. Physical Stash items are never removed by click.
@@ -67,4 +67,19 @@ medical=read("src/main/java/dev/dmzhideout/med/MedRecipes.java")
 assert "stashFirst" in medical and "StashApi.restore" in medical
 medui=read("src/main/java/dev/dmzhideout/client/MedScreen.java")
 assert "CRAFT / 製造" in medui and "HEAL / 治療" in medui
-print("Hideout v0.3.0 Med/Stash/Trade UI contracts: OK")
+print("Hideout v0.3.1 Med/Stash/Trade UI contracts: OK")
+
+# Hotfix: healing quote must not depend on PDA cash initialization, legacy
+# Health state adapters must be tried when the public treatment API is absent,
+# and both GUI screens show the synced PDA balance without trusting clients.
+compat=read("src/main/java/dev/dmzhideout/compat/MedicalCompat.java")
+cash=read("src/main/java/dev/dmzhideout/client/CashDisplay.java")
+med=read("src/main/java/dev/dmzhideout/client/MedScreen.java")
+trade=read("src/main/java/dev/dmzhideout/client/TradeScreen.java")
+assert "legacyQuote(" in compat and "legacyHeal(" in compat
+assert "quoteFullTreatment" in compat and "healFully" in compat
+assert "CashApi" in compat and "trySpend" in compat and "credit" in compat
+assert "ClientCashState" in cash and '"balance"' in cash
+assert "CASH: "+CashDisplay.format()' in med and "CASH: "+CashDisplay.format()' in trade
+assert "healButton.active=menu.quote()>0 && CashDisplay.balance()>=menu.quote()" in med
+print("v0.3.1 healing and CASH UI contract: OK")
