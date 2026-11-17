@@ -232,7 +232,7 @@ public final class MedScreen extends AbstractContainerScreen<MedMenu> {
         outputButton.setMessage(Component.literal(stashOutput?
                 "完成品：スタッシュ優先":"完成品：所持品優先"));
         healButton.visible=healing;
-        healButton.active=menu.quote()>0 && CashDisplay.balance()>=menu.quote();
+        healButton.active=menu.quote()>0 && (CashDisplay.balance()<0 || CashDisplay.balance()>=menu.quote());
         renderBackground(g);
         super.render(g,mx,my,partial);
         renderTooltip(g,mx,my);
