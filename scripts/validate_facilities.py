@@ -80,6 +80,6 @@ assert "legacyQuote(" in compat and "legacyHeal(" in compat
 assert "quoteFullTreatment" in compat and "healFully" in compat
 assert "CashApi" in compat and "trySpend" in compat and "credit" in compat
 assert "ClientCashState" in cash and '"balance"' in cash
-assert "CASH: "+CashDisplay.format()' in med and "CASH: "+CashDisplay.format()' in trade
+assert '"CASH: "+CashDisplay.format()' in med and '"CASH: "+CashDisplay.format()' in trade
 assert "healButton.active=menu.quote()>0 && CashDisplay.balance()>=menu.quote()" in med
 print("v0.3.1 healing and CASH UI contract: OK")
