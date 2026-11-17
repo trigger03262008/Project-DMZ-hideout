@@ -11,7 +11,7 @@
 - Existing item and block registry IDs are unchanged. The block items are
   no longer injected into vanilla Functional Blocks.
 - Loot has moved to its own repository:
-  https://github.com/trigger03262008/Project-DMZ-Loot
+  https://github.com/trigger03262008/Project-DMZ-Loot\n- The temporary \`loot/\` directory has been removed from this repository.\n  Loot now builds exclusively from its own repository and CI.
 
 ## v0.3.2: Salvage Workbench
 
