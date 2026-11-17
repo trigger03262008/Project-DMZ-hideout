@@ -148,7 +148,8 @@ public final class MedScreen extends AbstractContainerScreen<MedMenu> {
     }
 
     @Override protected void renderLabels(GuiGraphics g,int mx,int my) {
-        label(g,"MED STATION",274,21,GREEN,208);
+        label(g,"MED STATION",274,21,GREEN,111);
+        label(g,"CASH: "+CashDisplay.format(),392,21,GOLD,115);
         if(!healing){
             List<JsonObject> all=recipes();
             for(int i=0;i<ROWS;i++){
@@ -206,7 +207,13 @@ public final class MedScreen extends AbstractContainerScreen<MedMenu> {
                     amount<0?"治療情報を取得できません":
                     amount==0?"治療不要":String.format("%,d CASH",amount);
             label(g,price,275,171,amount>0?GOLD:GRAY,211);
-            label(g,"確認後に即時治療",275,197,GRAY,203);
+            long balance=CashDisplay.balance();
+            if(amount>0 && balance>=0 && balance<amount)
+                label(g,"CASH不足：治療には "+String.format("%,d",amount-balance)+
+                        " CASH 必要",275,187,RED,218);
+            else if(amount<0 && connected)
+                label(g,"Healthのバージョンを確認してください",275,187,RED,218);
+            label(g,"確認後に即時治療",275,202,GRAY,203);
         }
     }
 
@@ -225,7 +232,7 @@ public final class MedScreen extends AbstractContainerScreen<MedMenu> {
         outputButton.setMessage(Component.literal(stashOutput?
                 "完成品：スタッシュ優先":"完成品：所持品優先"));
         healButton.visible=healing;
-        healButton.active=menu.quote()>0;
+        healButton.active=menu.quote()>0 && CashDisplay.balance()>=menu.quote();
         renderBackground(g);
         super.render(g,mx,my,partial);
         renderTooltip(g,mx,my);

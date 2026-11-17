@@ -236,6 +236,7 @@ public final class TradeScreen extends AbstractContainerScreen<TradeMenu> {
                 302,68,menu.hasStash()?GREEN:RED,210);
         label(g,"SCROLL "+(menu.scrollRow()+1)+"/"+(menu.maxScroll()+1),
                 301,225,GRAY,210);
+        label(g,"CASH: "+CashDisplay.format(),302,242,GOLD,221);
         if(sellMode){
             label(g,"SELL / 売却予定アイテム",15,99,WHITE,253);
             long quote=menu.quote();
