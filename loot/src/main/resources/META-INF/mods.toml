@@ -1,0 +1,21 @@
+modLoader="javafml"
+loaderVersion="[47,)"
+license="All Rights Reserved"
+[[mods]]
+modId="dmzloot"
+version="${mod_version}"
+displayName="Project DMZ: Loot"
+authors="Project DMZ development team"
+description='''Independent survival scrap, tools, salvage and inventory metadata module.'''
+[[dependencies.dmzloot]]
+modId="forge"
+mandatory=true
+versionRange="[47.4.28,)"
+ordering="NONE"
+side="BOTH"
+[[dependencies.dmzloot]]
+modId="minecraft"
+mandatory=true
+versionRange="[1.20.1,1.20.2)"
+ordering="NONE"
+side="BOTH"

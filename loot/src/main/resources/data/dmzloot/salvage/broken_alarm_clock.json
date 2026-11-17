@@ -1,0 +1,24 @@
+{
+  "item": "dmzloot:broken_alarm_clock",
+  "tools": [
+    {
+      "family": "screwdriver",
+      "min_tier": 1,
+      "wear": 2
+    }
+  ],
+  "outputs": [
+    {
+      "item": "dmzloot:spring",
+      "count": 1
+    },
+    {
+      "item": "dmzloot:screw",
+      "count": 3
+    },
+    {
+      "item": "dmzloot:scrap_glass",
+      "count": 1
+    }
+  ]
+}

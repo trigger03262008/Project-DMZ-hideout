@@ -1,0 +1,95 @@
+plugins {
+    id 'java'
+    id 'maven-publish'
+    id 'net.minecraftforge.gradle' version '[6.0,6.2)'
+}
+version = '0.1.0'
+group = 'dev.dmzloot'
+base { archivesName = 'project-dmz-loot' }
+java.toolchain.languageVersion = JavaLanguageVersion.of(17)
+minecraft {
+    mappings channel: 'official', version: '1.20.1'
+    copyIdeResources = true
+    runs {
+        configureEach {
+            workingDirectory project.file('run')
+            property 'forge.logging.markers', 'REGISTRIES'
+            property 'forge.logging.console.level', 'info'
+            mods { dmzloot { source sourceSets.main } }
+        }
+        client {}
+        server { args '--nogui' }
+    }
+}
+dependencies { minecraft 'net.minecraftforge:forge:1.20.1-47.4.28' }
+tasks.named('processResources', ProcessResources).configure {
+    inputs.property 'mod_version', project.version
+    filesMatching('META-INF/mods.toml') { expand(mod_version: project.version) }
+}
+tasks.named('jar', Jar).configure { finalizedBy 'reobfJar' }
+tasks.withType(JavaCompile).configureEach { options.encoding = 'UTF-8' }
+
+// The generated 16px placeholders are deliberately replaceable. A hand-drawn
+// PNG in src/main/resources/assets/dmzloot/textures/item wins over generation.
+def generatedIcons = layout.buildDirectory.dir('generated/loot-icons')
+sourceSets.main.resources.srcDir(generatedIcons)
+tasks.register('generateLootIcons') {
+    def catalog = file('src/main/resources/data/dmzloot/catalog/items.json')
+    inputs.file(catalog)
+    inputs.dir(file('src/main/resources/assets/dmzloot/textures/item'))
+            .optional()
+    outputs.dir(generatedIcons)
+    doLast {
+        def defs = new groovy.json.JsonSlurper().parse(catalog)
+        def outDir = generatedIcons.get().asFile.toPath()
+                .resolve('assets/dmzloot/textures/item').toFile()
+        outDir.mkdirs()
+        defs.each { item ->
+            def existing = file("src/main/resources/assets/dmzloot/textures/item/${item.id}.png")
+            def out = new File(outDir, "${item.id}.png")
+            if (existing.exists()) { out.delete(); return }
+            def img = new java.awt.image.BufferedImage(16,16,java.awt.image.BufferedImage.TYPE_INT_ARGB)
+            def g = img.createGraphics()
+            try {
+                def palette = [
+                  scrap: [0x9A8D72,0xD4B681],
+                  parts: [0x7D8793,0xCED5D7],
+                  electronics: [0x3E907F,0x8DE4BB],
+                  junk: [0x8B7567,0xC6A99A],
+                  tools: [0x55789B,0xDAE1D3],
+                  valuables: [0xBA9654,0xF6D997]
+                ][item.category]
+                def a = new java.awt.Color(palette[0] as int)
+                def b = new java.awt.Color(palette[1] as int)
+                int n = Math.abs(item.id.hashCode() % 7)
+                g.setColor(new java.awt.Color(0x1B2726))
+                g.fillRect(3,3,10,10)
+                g.setColor(a)
+                if (item.category == 'tools') {
+                    g.fillRect(7,2,2,12)
+                    g.fillRect(4,2,8,3)
+                    g.setColor(b)
+                    g.fillRect(7,5,2,8)
+                } else if (item.category == 'electronics') {
+                    g.fillRect(3,4,10,8)
+                    g.setColor(b)
+                    for(int i=0;i<4;i++)g.fillRect(4+i*2,2,1,2)
+                    for(int i=0;i<4;i++)g.fillRect(4+i*2,12,1,2)
+                    g.fillRect(5+n%3,6,3,3)
+                } else if (item.category == 'valuables') {
+                    g.fillOval(3,3,10,10)
+                    g.setColor(b)
+                    g.fillOval(5,5,6,6)
+                } else {
+                    g.fillRect(3+n%3,4,9-n%3,7)
+                    g.setColor(b)
+                    g.fillRect(5,3,5+n%3,2)
+                    g.fillRect(4,11,7,2)
+                    g.fillRect(7+n%2,6,2,3)
+                }
+            } finally { g.dispose() }
+            javax.imageio.ImageIO.write(img,'png',out)
+        }
+    }
+}
+tasks.named('processResources').configure { dependsOn tasks.named('generateLootIcons') }
