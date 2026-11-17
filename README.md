@@ -1,4 +1,4 @@
-# Project DMZ: Hideout v0.3.2 — Medical Treatment and CASH Hotfix
+# Project DMZ: Hideout v0.3.2 — Salvage Workbench Integration
 
 **Minecraft 1.20.1 / Forge 47.4.28 / Java 17**. Independent mod `dmzhideout`, without mandatory P.D.A/Health/Inventory dependencies. The original Project DMZ design notes were reviewed; only the **Core and Core-generated zone** are part of this first slice.
 

@@ -26,6 +26,25 @@ jobs:
       - name: Build standalone Forge 1.20.1 Loot
         working-directory: loot
         run: gradle clean build --no-daemon --max-workers=1 --stacktrace
+      - name: Verify jar includes all 32 item sprites and models
+        working-directory: loot
+        run: |
+          python3 - <<'PY'
+          import json,zipfile
+          from pathlib import Path
+          defs=json.loads(Path("src/main/resources/data/dmzloot/catalog/items.json").read_text(encoding="utf-8"))
+          jar=Path("build/libs/project-dmz-loot-0.1.0.jar")
+          with zipfile.ZipFile(jar) as z:
+              names=set(z.namelist())
+              for item in defs:
+                  id=item["id"]
+                  png="assets/dmzloot/textures/item/"+id+".png"
+                  model="assets/dmzloot/models/item/"+id+".json"
+                  assert png in names, "Missing sprite "+png
+                  assert model in names, "Missing model "+model
+                  assert z.read(png).startswith(b"\\x89PNG\\r\\n\\x1a\\n"), png
+              print(f"Verified {len(defs)} Loot sprites and models in {jar.name}")
+          PY
       - uses: actions/upload-artifact@v4
         with:
           name: project-dmz-loot-0.1.0
