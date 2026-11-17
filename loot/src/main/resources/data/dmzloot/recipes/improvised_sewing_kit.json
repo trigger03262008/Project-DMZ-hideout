@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    {
+      "item": "dmzloot:scrap_cloth"
+    },
+    {
+      "item": "dmzloot:scrap_cloth"
+    },
+    {
+      "item": "dmzloot:scrap_iron"
+    }
+  ],
+  "result": {
+    "item": "dmzloot:improvised_sewing_kit",
+    "count": 1
+  }
+}

@@ -3,7 +3,7 @@
   "tools": [
     {
       "family": "screwdriver",
-      "min_tier": 1,
+      "min_tier": 0,
       "wear": 3
     }
   ],

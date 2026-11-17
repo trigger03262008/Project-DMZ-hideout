@@ -1,0 +1,33 @@
+name: Loot Forge CI
+on:
+  push:
+    branches: [main]
+    paths: ['loot/**', '.github/workflows/loot-ci.yml']
+  pull_request:
+    paths: ['loot/**', '.github/workflows/loot-ci.yml']
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.11'}
+      - name: Validate catalog and salvage/repair recipes
+        working-directory: loot
+        run: python3 scripts/verify.py
+  forge:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with: {distribution: temurin, java-version: '17'}
+      - uses: gradle/actions/setup-gradle@v4
+        with: {gradle-version: '8.8'}
+      - name: Build standalone Forge 1.20.1 Loot
+        working-directory: loot
+        run: gradle clean build --no-daemon --max-workers=1 --stacktrace
+      - uses: actions/upload-artifact@v4
+        with:
+          name: project-dmz-loot-0.1.0
+          path: loot/build/libs/*.jar
+          if-no-files-found: error

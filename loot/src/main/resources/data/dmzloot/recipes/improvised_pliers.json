@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    {
+      "item": "dmzloot:scrap_iron"
+    },
+    {
+      "item": "dmzloot:scrap_iron"
+    },
+    {
+      "item": "dmzloot:spring"
+    }
+  ],
+  "result": {
+    "item": "dmzloot:improvised_pliers",
+    "count": 1
+  }
+}
