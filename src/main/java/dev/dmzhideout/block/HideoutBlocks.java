@@ -1,19 +1,21 @@
 package dev.dmzhideout.block;
 
 import dev.dmzhideout.DMZHideout;
-import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraftforge.common.extensions.IForgeMenuType;
 import dev.dmzhideout.menu.StashMenu;
 import dev.dmzhideout.menu.MedMenu;
 import dev.dmzhideout.menu.TradeMenu;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.item.CreativeModeTab;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.material.MapColor;
-import net.minecraftforge.event.BuildCreativeModeTabContentsEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
@@ -28,6 +30,9 @@ public final class HideoutBlocks {
             DeferredRegister.create(ForgeRegistries.BLOCK_ENTITY_TYPES, DMZHideout.MOD_ID);
     private static final DeferredRegister<MenuType<?>> MENUS =
             DeferredRegister.create(ForgeRegistries.MENU_TYPES, DMZHideout.MOD_ID);
+    private static final DeferredRegister<CreativeModeTab> TABS =
+            DeferredRegister.create(Registries.CREATIVE_MODE_TAB, DMZHideout.MOD_ID);
+
 
     public static final RegistryObject<Block> HIDEOUT_CORE = BLOCKS.register("hideout_core",
             () -> new HideoutCoreBlock(BlockBehaviour.Properties.of()
@@ -81,6 +86,19 @@ public final class HideoutBlocks {
     public static final RegistryObject<MenuType<TradeMenu>> TRADE_MENU =
             MENUS.register("trading_center", () -> IForgeMenuType.create(TradeMenu::new));
 
+    public static final RegistryObject<CreativeModeTab> HIDEOUT_TAB =
+            TABS.register("hideout", () -> CreativeModeTab.builder()
+                    .title(Component.translatable("itemGroup.dmzhideout"))
+                    .icon(() -> new ItemStack(HIDEOUT_CORE_ITEM.get()))
+                    .displayItems((parameters, output) -> {
+                        output.accept(HIDEOUT_CORE_ITEM.get());
+                        output.accept(STASH_ITEM.get());
+                        output.accept(MED_ITEM.get());
+                        output.accept(TRADING_ITEM.get());
+                        output.accept(SALVAGE_WORKBENCH_ITEM.get());
+                    })
+                    .build());
+
     private HideoutBlocks() { }
 
     public static void register(IEventBus bus) {
@@ -88,17 +106,6 @@ public final class HideoutBlocks {
         ITEMS.register(bus);
         ENTITIES.register(bus);
         MENUS.register(bus);
-        bus.addListener(HideoutBlocks::creativeTab);
-    }
-
-    private static void creativeTab(BuildCreativeModeTabContentsEvent event) {
-        if (event.getTabKey().equals(CreativeModeTabs.FUNCTIONAL_BLOCKS))
-            {
-                event.accept(HIDEOUT_CORE_ITEM.get());
-                event.accept(STASH_ITEM.get());
-                event.accept(MED_ITEM.get());
-                event.accept(TRADING_ITEM.get());
-                event.accept(SALVAGE_WORKBENCH_ITEM.get());
-            }
+        TABS.register(bus);
     }
 }

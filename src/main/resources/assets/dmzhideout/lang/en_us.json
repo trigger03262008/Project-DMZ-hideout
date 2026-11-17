@@ -3,5 +3,6 @@
   "block.dmzhideout.stash": "Stash",
   "block.dmzhideout.med_station": "Med Station",
   "block.dmzhideout.trading_center": "Trading Center",
-  "block.dmzhideout.salvage_workbench": "Salvage Workbench"
+  "block.dmzhideout.salvage_workbench": "Salvage Workbench",
+  "itemGroup.dmzhideout": "Project DMZ: Hideout"
 }

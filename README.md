@@ -1,6 +1,17 @@
-# Project DMZ: Hideout v0.3.2 — Salvage Workbench Integration
+# Project DMZ: Hideout v0.3.3 — Dedicated Creative Tab
 
 **Minecraft 1.20.1 / Forge 47.4.28 / Java 17**. Independent mod `dmzhideout`, without mandatory P.D.A/Health/Inventory dependencies. The original Project DMZ design notes were reviewed; only the **Core and Core-generated zone** are part of this first slice.
+
+## v0.3.3: Dedicated Hideout Creative Tab
+
+- Adds `Project DMZ: Hideout` as its own Creative Mode tab, separate from
+  the Loot and Health inventories.
+- The Hideout tab contains all five facility blocks: Hideout Core, Stash,
+  Med Station, Trading Center, and Salvage Workbench.
+- Existing item and block registry IDs are unchanged. The block items are
+  no longer injected into vanilla Functional Blocks.
+- Loot has moved to its own repository:
+  https://github.com/trigger03262008/Project-DMZ-Loot
 
 ## v0.3.2: Salvage Workbench
 
