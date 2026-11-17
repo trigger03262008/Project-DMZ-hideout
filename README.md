@@ -1,6 +1,16 @@
-# Project DMZ: Hideout v0.3.1 — Medical Treatment and CASH Hotfix
+# Project DMZ: Hideout v0.3.2 — Medical Treatment and CASH Hotfix
 
 **Minecraft 1.20.1 / Forge 47.4.28 / Java 17**. Independent mod `dmzhideout`, without mandatory P.D.A/Health/Inventory dependencies. The original Project DMZ design notes were reviewed; only the **Core and Core-generated zone** are part of this first slice.
+
+## v0.3.2: Salvage Workbench
+
+- New `dmzhideout:salvage_workbench` placeable block with a crafting recipe.
+- Right-click while holding Loot salvageable junk to disassemble without tool
+  durability cost; right-click while holding a damaged Loot tool to repair.
+- Uses optional reflective `dev.dmzloot.api.LootApi.useWorkbench` so Hideout
+  does not require Loot to launch.
+- Outputs and repair materials are processed by the Loot mod on the server.
+- No The Lost Cities / structure loot tables are included yet.
 
 ## v0.3.1: Med Station treatment and CASH display fix
 

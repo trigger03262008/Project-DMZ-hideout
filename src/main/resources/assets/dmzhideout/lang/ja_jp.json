@@ -2,5 +2,6 @@
   "block.dmzhideout.hideout_core": "ハイドアウト・コア",
   "block.dmzhideout.stash": "スタッシュ",
   "block.dmzhideout.med_station": "メッドステーション",
-  "block.dmzhideout.trading_center": "トレーディングセンター"
+  "block.dmzhideout.trading_center": "トレーディングセンター",
+  "block.dmzhideout.salvage_workbench": "解体ワークベンチ"
 }

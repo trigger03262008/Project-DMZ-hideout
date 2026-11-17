@@ -53,6 +53,15 @@ public final class HideoutBlocks {
     public static final RegistryObject<Item> TRADING_ITEM = ITEMS.register("trading_center",
             () -> new BlockItem(TRADING_CENTER.get(), new Item.Properties().stacksTo(1)));
 
+    public static final RegistryObject<Block> SALVAGE_WORKBENCH =
+            BLOCKS.register("salvage_workbench",
+                    () -> new SalvageWorkbenchBlock(BlockBehaviour.Properties.of()
+                            .mapColor(MapColor.METAL).strength(3.5F, 8.0F)));
+    public static final RegistryObject<Item> SALVAGE_WORKBENCH_ITEM =
+            ITEMS.register("salvage_workbench",
+                    () -> new BlockItem(SALVAGE_WORKBENCH.get(),
+                            new Item.Properties().stacksTo(1)));
+
     public static final RegistryObject<BlockEntityType<StashBlockEntity>> STASH_ENTITY =
             ENTITIES.register("stash", () -> BlockEntityType.Builder.of(
                     StashBlockEntity::new, STASH.get()).build(null));
@@ -89,6 +98,7 @@ public final class HideoutBlocks {
                 event.accept(STASH_ITEM.get());
                 event.accept(MED_ITEM.get());
                 event.accept(TRADING_ITEM.get());
+                event.accept(SALVAGE_WORKBENCH_ITEM.get());
             }
     }
 }
