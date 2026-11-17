@@ -42,7 +42,7 @@ jobs:
                   model="assets/dmzloot/models/item/"+id+".json"
                   assert png in names, "Missing sprite "+png
                   assert model in names, "Missing model "+model
-                  assert z.read(png).startswith(b"\\x89PNG\\r\\n\\x1a\\n"), png
+                  assert z.read(png).startswith(bytes([137,80,78,71,13,10,26,10])), png
               print(f"Verified {len(defs)} Loot sprites and models in {jar.name}")
           PY
       - uses: actions/upload-artifact@v4
