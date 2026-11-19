@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Independent static checks for the v0.3.3 standalone facility slice."""
+"""Independent static checks for the v0.4.0 standalone facility slice."""
 import json
 from pathlib import Path
 
@@ -39,8 +39,8 @@ assert len(recipe["ingredients"])>=1
 assert all(i["count"]>0 and ":" in i["item"] for i in recipe["ingredients"])
 
 assert js("src/main/resources/pack.mcmeta")["pack"]["pack_format"]==15
-assert "project-dmz-hideout-0.3.3" in read(".github/workflows/hideout-ci.yml")
-assert "version = '0.3.3'" in read("build.gradle")
+assert "project-dmz-hideout-0.4.0" in read(".github/workflows/hideout-ci.yml")
+assert "version = '0.4.0'" in read("build.gradle")
 source=read("src/main/java/dev/dmzhideout/block/StashBlockEntity.java")
 assert "MAX_LEVEL = 5" in source and "SLOTS_PER_LEVEL = 270" in source
 for token in ("setChanged()","getIntArray(\"Locked\")","toggleShared","upgrade","insert("):
@@ -49,7 +49,7 @@ bridge=read("src/main/java/dev/dmzhideout/api/StashApi.java")
 for method in ("findAdjacent","canInsert","insert","extract","snapshot","restore","spendableSnapshot"):
     assert method in bridge
 
-print("Hideout v0.3.3 facility assets, medical recipes and storage bridge: OK")
+print("Hideout v0.4.0 facility assets, medical recipes and storage bridge: OK")
 
 # Regression: custom grid selection and basket controls precede vanilla
 # container-slot handling. Physical Stash items are never removed by click.
@@ -67,7 +67,7 @@ medical=read("src/main/java/dev/dmzhideout/med/MedRecipes.java")
 assert "stashFirst" in medical and "StashApi.restore" in medical
 medui=read("src/main/java/dev/dmzhideout/client/MedScreen.java")
 assert "CRAFT / 製造" in medui and "HEAL / 治療" in medui
-print("Hideout v0.3.3 Med/Stash/Trade UI contracts: OK")
+print("Hideout v0.4.0 Med/Stash/Trade UI contracts: OK")
 
 # Hotfix: healing quote must not depend on PDA cash initialization, legacy
 # Health state adapters must be tried when the public treatment API is absent,
@@ -82,7 +82,7 @@ assert "CashApi" in compat and "trySpend" in compat and "credit" in compat
 assert "ClientCashState" in cash and '"balance"' in cash
 assert '"CASH: "+CashDisplay.format()' in med and '"CASH: "+CashDisplay.format()' in trade
 assert "healButton.active=menu.quote()>0 && (CashDisplay.balance()<0 || CashDisplay.balance()>=menu.quote())" in med
-print("v0.3.3 healing and CASH UI contract: OK")
+print("v0.4.0 healing and CASH UI contract: OK")
 
 # Salvage bench is native Hideout block, Loot remains optional.
 bench=read("src/main/java/dev/dmzhideout/block/SalvageWorkbenchBlock.java")
@@ -102,4 +102,4 @@ for entry in ("HIDEOUT_CORE_ITEM","STASH_ITEM","MED_ITEM","TRADING_ITEM","SALVAG
     assert "output.accept("+entry+".get())" in blocks
 for locale in ("en_us","ja_jp"):
     assert js(f"src/main/resources/assets/dmzhideout/lang/{locale}.json")["itemGroup.dmzhideout"]
-print("Hideout v0.3.3 independent Creative Mode tab: OK")
+print("Hideout v0.4.0 independent Creative Mode tab: OK")
