@@ -49,8 +49,15 @@ jobs:
         with: {gradle-version: '8.8'}
       - name: Build Forge 1.20.1 Hideout
         run: gradle clean build --no-daemon --max-workers=1 --stacktrace
+      - name: Verify optional real rig actions in the Stash screen
+        run: |
+          set -euo pipefail
+          JAR=build/libs/project-dmz-hideout-0.4.0.jar
+          jar tf "$JAR" | grep -Fx 'dev/dmzhideout/client/HideoutRigBridge.class'
+          grep -Fq 'HideoutRigBridge.equipCell' src/main/java/dev/dmzhideout/client/StashScreen.java
+          grep -Fq 'HideoutRigBridge.swap' src/main/java/dev/dmzhideout/client/StashScreen.java
       - uses: actions/upload-artifact@v4
         with:
-          name: project-dmz-hideout-0.3.3
+          name: project-dmz-hideout-0.4.0
           path: build/libs/*.jar
           if-no-files-found: error

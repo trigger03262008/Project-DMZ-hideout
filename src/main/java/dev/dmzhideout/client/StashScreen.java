@@ -10,7 +10,6 @@ import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
-import net.minecraftforge.fml.ModList;
 
 /**
  * Tarkov-inspired three columns: reserved equipment / actual player /
@@ -24,6 +23,8 @@ public final class StashScreen extends AbstractContainerScreen<StashMenu> {
     private EditBox search;
     private Button filterButton;
     private boolean scrollDrag;
+    private int rigChoice;
+    private int layoutSelection=-1;
 
     public StashScreen(StashMenu menu,Inventory inventory,Component title){
         super(menu,inventory,title);
@@ -68,7 +69,8 @@ public final class StashScreen extends AbstractContainerScreen<StashMenu> {
             if(i<StashMenu.VISIBLE && menu.lockedVisible(i))
                 g.fill(sx+12,sy+2,sx+16,sy+6,0xFFFFC671);
         }
-        // Visual-only reserved equipment boxes: never accept item clicks.
+        // All slots except RIG remain visual-only. RIG is an optional
+        // client action surface; the Inventory server validates each request.
         String[] gear={"EAR","HEAD","FACE","RIG","ARMOR","BACKPACK",
                 "SLING","HOLSTER","POUCH","SPECIAL","MELEE","AMMO"};
         for(int i=0;i<gear.length;i++){
@@ -77,10 +79,14 @@ public final class StashScreen extends AbstractContainerScreen<StashMenu> {
             g.fill(sx,sy,sx+67,sy+25,0xFF303D38);
             g.fill(sx+1,sy+1,sx+66,sy+24,0xFF1B2925);
             g.drawString(font,gear[i],sx+5,sy+4,0xFF77877D,false);
-            // Draw a clear padlock without relying on missing Unicode glyphs.
-            g.fill(sx+49,sy+15,sx+57,sy+22,0xFF839589);
-            g.fill(sx+51,sy+10,sx+55,sy+16,0xFF839589);
-            g.fill(sx+52,sy+12,sx+54,sy+16,0xFF1B2925);
+            if(i==3 && HideoutRigBridge.installed()){
+                g.fill(sx+48,sy+14,sx+61,sy+22,0xFF579B75);
+                g.drawString(font,"GO",sx+49,sy+15,0xFFF1FBEA,false);
+            }else{
+                g.fill(sx+49,sy+15,sx+57,sy+22,0xFF839589);
+                g.fill(sx+51,sy+10,sx+55,sy+16,0xFF839589);
+                g.fill(sx+52,sy+12,sx+54,sy+16,0xFF1B2925);
+            }
         }
         // Player model background.
         g.fill(x+226,y+48,x+332,y+151,0xFF172721);
@@ -100,24 +106,64 @@ public final class StashScreen extends AbstractContainerScreen<StashMenu> {
 
     @Override protected void renderLabels(GuiGraphics g,int mx,int my){
         g.drawString(font,"EQUIPMENT",15,15,GREEN,false);
-        g.drawString(font,"RESERVED / LOCKED",15,31,GRAY,false);
+        g.drawString(font,HideoutRigBridge.installed()
+                ?"RIG / EQUIPMENT":"RESERVED / LOCKED",15,31,GRAY,false);
         g.drawString(font,"PLAYER",186,17,GREEN,false);
         g.drawString(font,"STASH  LV."+menu.tier(),389,45,GREEN,false);
         g.drawString(font,"ARMOR",186,48,GRAY,false);
         g.drawString(font,"INVENTORY",186,150,GRAY,false);
         g.drawString(font,"OFFHAND",323,106,GRAY,false);
-        g.drawString(font,"HOTBAR",187,221,GRAY,false);
-        String unlock=ModList.get().isLoaded("dmzinventory")||
-                ModList.get().isLoaded("dmzcombat")?
-                "専用装備API未接続":"Inventory / Combat 未導入";
+        if(HideoutRigBridge.installed()){
+            g.drawString(font,"HOTBAR / SIZE CONFIG",187,207,GRAY,false);
+            String[] labels={"M","1","4","6","X"};
+            for(int i=0;i<9;i++){
+                int x=187+i*18;
+                g.fill(x,218,x+16,231,i==layoutSelection?0xFF5F8A70:0xFF354B40);
+                String type=HideoutRigBridge.type(i);
+                String label=switch(type){
+                    case "MULTI"->"M";
+                    case "SMALL"->"1";
+                    case "MEDIUM"->"2";
+                    case "LARGE"->"4";
+                    case "EXTRA_LARGE"->"6";
+                    default->"X";
+                };
+                g.drawCenteredString(font,label,x+8,220,TEXT);
+            }
+        }else g.drawString(font,"HOTBAR",187,221,GRAY,false);
+        String unlock=HideoutRigBridge.installed()
+                ?"RIG: "+(HideoutRigBridge.equipped().isEmpty()?"未装備":HideoutRigBridge.equipped())
+                :"Inventory / Combat 未導入";
         g.drawString(font,font.plainSubstrByWidth(unlock,146),14,227,
                 0xFF95A59C,false);
+        if(HideoutRigBridge.installed()){
+            var items=rigCandidates();
+            String description=items.length==0?"左RIG:右クリックで解除":
+                    "選択 "+(rigChoice%items.length+1)+"/"+items.length+
+                    " / 左:装備 右:解除";
+            g.drawString(font,font.plainSubstrByWidth(description,149),
+                    14,210,GRAY,false);
+        }
         g.drawString(font,(menu.shared()?"TEAM SHARED":"PRIVATE")+
                 "  "+menu.occupied()+"/"+menu.capacity(),385,187,TEXT,false);
         g.drawString(font,"SCROLL "+(menu.scrollRow()+1)+"/"+
                 (menu.maxScroll()+1),385,202,GRAY,false);
         g.drawString(font,"Shift+右クリック：保護 / LOCK",385,224,GRAY,false);
         g.drawString(font,"マウスホイール・バーで上下移動",385,242,GRAY,false);
+    }
+
+    private int[] rigCandidates(){
+        if(minecraft==null||minecraft.player==null)return new int[0];
+        java.util.ArrayList<Integer> cells=new java.util.ArrayList<>();
+        for(int cell=0;cell<27;cell++)
+            if(HideoutRigBridge.isRig(minecraft.player.getInventory().getItem(9+cell)))
+                cells.add(cell);
+        return cells.stream().mapToInt(Integer::intValue).toArray();
+    }
+
+    private boolean overRig(double mx,double my){
+        return mx>=leftPos+88&&mx<leftPos+155
+                &&my>=topPos+84&&my<topPos+109;
     }
 
     private void scrollTo(double localY){
@@ -128,6 +174,12 @@ public final class StashScreen extends AbstractContainerScreen<StashMenu> {
     }
 
     @Override public boolean mouseScrolled(double mx,double my,double delta) {
+        if(HideoutRigBridge.installed()&&overRig(mx,my)){
+            int[] items=rigCandidates();
+            if(items.length>0)
+                rigChoice=Math.floorMod(rigChoice+(delta>0?-1:1),items.length);
+            return true;
+        }
         if(mx>=leftPos+380 && mx<=leftPos+570 &&
                 my>=topPos+40 && my<=topPos+274){
             int n=delta>0?-3:delta<0?3:0;
@@ -138,6 +190,31 @@ public final class StashScreen extends AbstractContainerScreen<StashMenu> {
         return super.mouseScrolled(mx,my,delta);
     }
     @Override public boolean mouseClicked(double mx,double my,int button){
+        if(HideoutRigBridge.installed()&&overRig(mx,my)){
+            if(button==1){
+                if(hasShiftDown())HideoutRigBridge.cancel();
+                else HideoutRigBridge.unequip();
+                return true;
+            }
+            if(button==0){
+                int[] cells=rigCandidates();
+                if(cells.length>0)HideoutRigBridge.equipCell(cells[
+                        Math.floorMod(rigChoice,cells.length)]);
+                return true;
+            }
+        }
+        if(HideoutRigBridge.installed()&&button==0
+                &&mx>=leftPos+187&&mx<leftPos+349
+                &&my>=topPos+218&&my<topPos+231){
+            int slot=((int)mx-leftPos-187)/18;
+            if(layoutSelection<0)layoutSelection=slot;
+            else{
+                if(layoutSelection!=slot)
+                    HideoutRigBridge.swap(layoutSelection,slot);
+                layoutSelection=-1;
+            }
+            return true;
+        }
         if(button==0&&mx>=leftPos+557&&mx<=leftPos+566&&
                 my>=topPos+59&&my<=topPos+169){
             scrollDrag=true;

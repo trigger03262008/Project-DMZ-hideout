@@ -1,3 +1,9 @@
+# Project DMZ: Hideout v0.4.0 — Stash rig equipment controls
+
+**v0.4.0:** the reserved **RIG** equipment box is now functional when Inventory v0.8.0 is installed; every other reserved equipment box remains locked. From the Stash UI, move a rig item into the player's real 9×3 main inventory, then **left-click RIG** to equip it (mouse wheel over RIG cycles among available rigs), **right-click RIG** to unequip, or **Shift+right-click RIG** to cancel a pending change. A clickable 9-position size strip above the real hotbar permits picking two slot types to swap, without moving the held items. Inventory validates and owns all server-side changes; Hideout has no direct dependency and never duplicates equipment.
+
+This first integration does **not** claim native drag-and-drop from a Stash storage cell directly onto RIG; transfer to player inventory first. The Stash's server-owned slots, search, sharing, item locks and compatibility are unchanged. Test with a world backup and matching client/server Inventory/P.D.A builds.
+
 # Project DMZ: Hideout v0.3.3 — Dedicated Creative Tab
 
 **Minecraft 1.20.1 / Forge 47.4.28 / Java 17**. Independent mod `dmzhideout`, without mandatory P.D.A/Health/Inventory dependencies. The original Project DMZ design notes were reviewed; only the **Core and Core-generated zone** are part of this first slice.
