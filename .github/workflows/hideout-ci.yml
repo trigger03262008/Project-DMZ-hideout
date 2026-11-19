@@ -52,12 +52,12 @@ jobs:
       - name: Verify optional real rig actions in the Stash screen
         run: |
           set -euo pipefail
-          JAR=build/libs/project-dmz-hideout-0.4.0.jar
+          JAR=build/libs/project-dmz-hideout-0.4.1.jar
           jar tf "$JAR" | grep -Fx 'dev/dmzhideout/client/HideoutRigBridge.class'
           grep -Fq 'HideoutRigBridge.equipCell' src/main/java/dev/dmzhideout/client/StashScreen.java
           grep -Fq 'HideoutRigBridge.swap' src/main/java/dev/dmzhideout/client/StashScreen.java
       - uses: actions/upload-artifact@v4
         with:
-          name: project-dmz-hideout-0.4.0
+          name: project-dmz-hideout-0.4.1
           path: build/libs/*.jar
           if-no-files-found: error
