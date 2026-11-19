@@ -4,7 +4,16 @@
 
 This first integration does **not** claim native drag-and-drop from a Stash storage cell directly onto RIG; transfer to player inventory first. The Stash's server-owned slots, search, sharing, item locks and compatibility are unchanged. Test with a world backup and matching client/server Inventory/P.D.A builds.
 
-# Project DMZ: Hideout v0.3.3 — Dedicated Creative Tab
+# Project DMZ: Hideout v0.4.1 — safe-zone particle optimization
+
+## v0.4.1: cheaper ring particle rendering
+
+- Cache unit-circle sine/cosine coordinates for the configured particle count instead of recalculating the same trigonometric values for every observer and every safe zone.
+- Recalculate automatically when `particleRingPoints` changes; preserve the exact original boundary geometry, colors, visibility culling, ownership and server packet behavior.
+- Existing pure-Java geometry tests now compare all 12-, 40- and 128-point ring coordinates against the original formula.
+- No change to saved zones, Stash items, Med Station, trade operations, or network protocol. Validate multi-viewer boundary appearance in a real world.
+
+## Previous release: v0.4.0 rig controls and v0.3.3 creative tab
 
 **Minecraft 1.20.1 / Forge 47.4.28 / Java 17**. Independent mod `dmzhideout`, without mandatory P.D.A/Health/Inventory dependencies. The original Project DMZ design notes were reviewed; only the **Core and Core-generated zone** are part of this first slice.
 

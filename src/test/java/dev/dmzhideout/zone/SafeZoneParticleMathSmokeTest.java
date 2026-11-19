@@ -24,6 +24,18 @@ public final class SafeZoneParticleMathSmokeTest {
         assert ZoneGeometry.contains(0, 64, 0, 12, 64, 0, 12, 12);
         assert !ZoneGeometry.contains(0, 64, 0, 13, 64, 0, 12, 12);
 
+        // Caching must preserve all coordinates across configurable ring sizes.
+        for (int points : new int[]{12, 40, 128}) {
+            for (int i = 0; i < points; i++) {
+                double angle = 2.0D * Math.PI * i / points;
+                assert Math.abs(SafeZoneParticleMath.ringX(-12, 12, angle)
+                        - SafeZoneParticleMath.ringX(-12, 12, i, points)) < 1.0E-10D;
+                assert Math.abs(SafeZoneParticleMath.ringZ(8, 12, angle)
+                        - SafeZoneParticleMath.ringZ(8, 12, i, points)) < 1.0E-10D;
+            }
+        }
+        // A change of configured point count must rebuild the cache safely.
+        assert Math.abs(SafeZoneParticleMath.ringX(0, 12, 0, 12) - 13D) < 1E-10D;
         System.out.println("Safe-zone particle outline tests: OK");
     }
 }

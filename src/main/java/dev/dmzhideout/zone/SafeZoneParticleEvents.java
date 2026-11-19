@@ -25,7 +25,6 @@ public final class SafeZoneParticleEvents {
             new Vector3f(0.20F, 0.88F, 0.72F), 0.90F);
     private static final DustParticleOptions FOREIGN = new DustParticleOptions(
             new Vector3f(0.96F, 0.51F, 0.21F), 0.90F);
-    private static final double TWO_PI = 2.0D * Math.PI;
 
     private SafeZoneParticleEvents() { }
 
@@ -60,11 +59,10 @@ public final class SafeZoneParticleEvents {
             double y = SafeZoneParticleMath.sliceHeight(
                     pos.getY(), vertical, player.getEyeY() - 0.25D);
             for (int i = 0; i < pointCount; i++) {
-                double angle = TWO_PI * i / pointCount;
                 emit(level, player, dust,
-                        SafeZoneParticleMath.ringX(pos.getX(), radius, angle),
+                        SafeZoneParticleMath.ringX(pos.getX(), radius, i, pointCount),
                         y,
-                        SafeZoneParticleMath.ringZ(pos.getZ(), radius, angle));
+                        SafeZoneParticleMath.ringZ(pos.getZ(), radius, i, pointCount));
             }
 
             // Four slim vertical guideposts reveal the otherwise invisible
